@@ -118,6 +118,14 @@ module.exports = function startApi(client) {
   );
 
   // ==========================================
+  // GIVEAWAYS ROUTES (REQUIRED FOR DASHBOARD)
+  // ==========================================
+  app.use(
+    "/api/guilds",
+    require("./routes/giveaways")(client)
+  );
+
+  // ==========================================
   // 404 HANDLER
   // ==========================================
   app.use((req, res) => {

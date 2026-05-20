@@ -13,16 +13,32 @@ module.exports = function (client) {
     try {
       const guilds = client.guilds.cache
         .map((guild) => ({
-          id: guild.id,
+          // Always return IDs as strings for reliable comparison
+          id: String(guild.id),
+
+          // Basic guild information
           name: guild.name,
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
+
+          // Compatibility fields for different frontend checks
           botInstalled: true,
+          isInstalled: true,
+          installed: true,
+
+          // Extra metadata
+          configured: true,
+          hasBot: true,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
+      console.log(
+        `📡 /api/guilds requested - returning ${guilds.length} guild(s)`
+      );
+
       res.json({
         success: true,
+        count: guilds.length,
         guilds,
       });
     } catch (error) {
@@ -44,7 +60,7 @@ module.exports = function (client) {
       const { guildId } = req.params;
 
       // Verify the bot is in this guild
-      const guild = client.guilds.cache.get(guildId);
+      const guild = client.guilds.cache.get(String(guildId));
 
       if (!guild) {
         return res.status(404).json({
@@ -81,13 +97,20 @@ module.exports = function (client) {
 
       res.json({
         success: true,
-        guildId,
+        guildId: String(guildId),
+
         guild: {
-          id: guild.id,
+          id: String(guild.id),
           name: guild.name,
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
+
+          // Compatibility fields
+          botInstalled: true,
+          isInstalled: true,
+          installed: true,
         },
+
         stats: {
           totalGiveaways,
           activeGiveaways,
@@ -95,17 +118,20 @@ module.exports = function (client) {
           completedGiveaways,
         },
 
-        // Include top-level fields as well for compatibility
+        // Top-level fields for maximum frontend compatibility
         totalGiveaways,
         activeGiveaways,
         scheduledGiveaways,
         completedGiveaways,
+
+        // Premium placeholder
+        premium: {
+          active: false,
+          tier: "Free",
+        },
       });
     } catch (error) {
-      console.error(
-        "Error fetching guild overview:",
-        error
-      );
+      console.error("Error fetching guild overview:", error);
 
       res.status(500).json({
         success: false,
