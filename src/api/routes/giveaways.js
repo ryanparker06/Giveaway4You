@@ -123,15 +123,27 @@ module.exports = function (client) {
         channelId,
         prize,
         winnerCount: Number(winnerCount),
-        hostedBy: hostedBy || null,
+        hostedBy: hostedBy || "Dashboard",
         requirements,
         description,
         image,
+
+        // Timing
+        startAt: new Date(),
         endsAt,
+
+        // Status
         ended: false,
         scheduled: false,
+        cancelled: false,
+
+        // Required by schema
+        messageId: "pending",
+
+        // Arrays
         entries: [],
-        winners: []
+        winners: [],
+        winnerIds: []
       });
 
       return res.json({
