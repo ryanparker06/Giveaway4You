@@ -1,30 +1,117 @@
 const express = require("express");
 const Giveaway = require("../../models/Giveaway");
 
-module.exports = function(client) {
+module.exports = function (client) {
   const router = express.Router();
 
+  // ==========================================
+  // GET /api/guilds
+  // Returns all guilds the bot is currently in
+  // Used by the dashboard server selection page
+  // ==========================================
+  router.get("/", async (req, res) => {
+    try {
+      const guilds = client.guilds.cache
+        .map((guild) => ({
+          id: guild.id,
+          name: guild.name,
+          icon: guild.icon,
+          memberCount: guild.memberCount || 0,
+          botInstalled: true,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      res.json({
+        success: true,
+        guilds,
+      });
+    } catch (error) {
+      console.error("Error fetching guilds:", error);
+
+      res.status(500).json({
+        success: false,
+        error: "Failed to fetch guilds",
+      });
+    }
+  });
+
+  // ==========================================
+  // GET /api/guilds/:guildId/overview
+  // Returns dashboard overview statistics
+  // ==========================================
   router.get("/:guildId/overview", async (req, res) => {
-    const { guildId } = req.params;
+    try {
+      const { guildId } = req.params;
 
-    const activeGiveaways = await Giveaway.countDocuments({
-      guildId,
-      ended: false,
-      scheduled: { $ne: true }
-    });
+      // Verify the bot is in this guild
+      const guild = client.guilds.cache.get(guildId);
 
-    const scheduledGiveaways = await Giveaway.countDocuments({
-      guildId,
-      scheduled: true,
-      ended: false
-    });
+      if (!guild) {
+        return res.status(404).json({
+          success: false,
+          error: "Guild not found or bot is not in this server",
+        });
+      }
 
-    res.json({
-      success: true,
-      guildId,
-      activeGiveaways,
-      scheduledGiveaways
-    });
+      // Active giveaways
+      const activeGiveaways = await Giveaway.countDocuments({
+        guildId,
+        ended: false,
+        scheduled: { $ne: true },
+      });
+
+      // Scheduled giveaways
+      const scheduledGiveaways = await Giveaway.countDocuments({
+        guildId,
+        scheduled: true,
+        ended: false,
+      });
+
+      // Completed giveaways
+      const completedGiveaways = await Giveaway.countDocuments({
+        guildId,
+        ended: true,
+      });
+
+      // Total giveaways
+      const totalGiveaways =
+        activeGiveaways +
+        scheduledGiveaways +
+        completedGiveaways;
+
+      res.json({
+        success: true,
+        guildId,
+        guild: {
+          id: guild.id,
+          name: guild.name,
+          icon: guild.icon,
+          memberCount: guild.memberCount || 0,
+        },
+        stats: {
+          totalGiveaways,
+          activeGiveaways,
+          scheduledGiveaways,
+          completedGiveaways,
+        },
+
+        // Include top-level fields as well for compatibility
+        totalGiveaways,
+        activeGiveaways,
+        scheduledGiveaways,
+        completedGiveaways,
+      });
+    } catch (error) {
+      console.error(
+        "Error fetching guild overview:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        error: "Failed to fetch guild overview",
+      });
+    }
   });
 
   return router;
