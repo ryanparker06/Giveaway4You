@@ -119,31 +119,48 @@ module.exports = function (client) {
 
       // Create giveaway document
       const giveaway = await Giveaway.create({
+        // Core fields
         guildId,
         channelId,
         prize,
-        winnerCount: Number(winnerCount),
+        messageId: "pending",
+
+        // Giveaway settings
+        winnerCount: Number(winnerCount) || 1,
         hostedBy: hostedBy || "Dashboard",
-        requirements,
-        description,
-        image,
 
         // Timing
         startAt: new Date(),
         endsAt,
 
-        // Status
+        // Status flags
         ended: false,
         scheduled: false,
         cancelled: false,
+        paused: false,
 
-        // Required by schema
-        messageId: "pending",
+        // Optional content
+        description: description || "",
+        image: image || null,
+        requirements: requirements || {},
 
-        // Arrays
+        // Collections
         entries: [],
         winners: [],
-        winnerIds: []
+        winnerIds: [],
+        participants: [],
+
+        // Common counters
+        entryCount: 0,
+
+        // Message/embed placeholders
+        embedData: {},
+        reaction: "🎉",
+
+        // Miscellaneous placeholders
+        bonusEntries: [],
+        exemptMembers: [],
+        lastWinnerIds: []
       });
 
       return res.json({
