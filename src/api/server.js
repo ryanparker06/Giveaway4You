@@ -6,33 +6,73 @@ module.exports = function startApi(client) {
 
   // ==========================================
   // CORS CONFIGURATION
-  // Allows your Vercel dashboard to access the API
+  // Allows your Vercel dashboard, custom domain,
+  // localhost, and all Vercel preview deployments
   // ==========================================
   const allowedOrigins = [
     process.env.DASHBOARD_URL ||
       "https://v0-giveaway4you-website-design.vercel.app",
-    "http://localhost:3000"
+    "https://v0-giveaway4you-website-design.vercel.app",
+    "https://giveaway4you.com",
+    "https://www.giveaway4you.com",
+    "http://localhost:3000",
+    "http://localhost:3001"
   ];
 
   app.use(
     cors({
       origin: function (origin, callback) {
-        // Allow requests with no origin (Postman, curl, server-to-server)
+        // Allow requests with no origin
+        // (Postman, curl, health checks, server-to-server)
         if (!origin) {
           return callback(null, true);
         }
 
-        // Allow any origin in the allowed list
+        // Allow exact matches from the whitelist
         if (allowedOrigins.includes(origin)) {
+          console.log(`✅ Allowed by CORS: ${origin}`);
           return callback(null, true);
         }
 
+        // Allow all Vercel deployments automatically
+        if (origin.endsWith(".vercel.app")) {
+          console.log(
+            `✅ Allowed dynamic Vercel origin: ${origin}`
+          );
+          return callback(null, true);
+        }
+
+        // Allow Giveaway4You domains and subdomains
+        if (
+          origin.includes("giveaway4you.com") ||
+          origin.includes("giveaway4you")
+        ) {
+          console.log(
+            `✅ Allowed Giveaway4You origin: ${origin}`
+          );
+          return callback(null, true);
+        }
+
+        // Block everything else
         console.log(`❌ Blocked by CORS: ${origin}`);
         return callback(
           new Error("Not allowed by CORS")
         );
       },
-      credentials: true
+      credentials: true,
+      methods: [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+      ],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With"
+      ]
     })
   );
 
@@ -94,6 +134,15 @@ module.exports = function startApi(client) {
   app.use((err, req, res, next) => {
     console.error("API Error:", err);
 
+    // Special handling for CORS errors
+    if (err.message === "Not allowed by CORS") {
+      return res.status(403).json({
+        success: false,
+        error: "Origin not allowed by CORS",
+        origin: req.headers.origin || null
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: err.message || "Internal Server Error"
@@ -106,13 +155,14 @@ module.exports = function startApi(client) {
   const port = process.env.API_PORT || 3001;
 
   app.listen(port, "0.0.0.0", () => {
-    console.log(
-      `Dashboard API running on port ${port}`
-    );
-    console.log(
-      `Allowed CORS origins: ${allowedOrigins.join(
-        ", "
-      )}`
-    );
+    console.log(`Dashboard API running on port ${port}`);
+    console.log("Allowed CORS origins:");
+
+    allowedOrigins.forEach((origin) => {
+      console.log(` - ${origin}`);
+    });
+
+    console.log(" - Any *.vercel.app deployment");
+    console.log(" - Any Giveaway4You custom domain");
   });
 };
