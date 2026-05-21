@@ -20,6 +20,7 @@ module.exports = function (client) {
         winnerCount,
         duration,
         description,
+        userId,
       } = req.body;
 
       console.log("🎉 CREATE GIVEAWAY REQUEST:");
@@ -28,19 +29,26 @@ module.exports = function (client) {
       // ==========================================
       // VALIDATION
       // ==========================================
-      if (!guildId || !channelId || !prize) {
+      if (
+        !guildId ||
+        !channelId ||
+        !prize ||
+        !userId
+      ) {
         return res.status(400).json({
           success: false,
-          error: "Missing required fields",
+          error:
+            "Missing required fields",
         });
       }
 
       // ==========================================
       // FETCH GUILD
       // ==========================================
-      const guild = await client.guilds.fetch(
-        String(guildId)
-      );
+      const guild =
+        await client.guilds.fetch(
+          String(guildId)
+        );
 
       if (!guild) {
         return res.status(404).json({
@@ -54,9 +62,10 @@ module.exports = function (client) {
       // ==========================================
       await guild.channels.fetch();
 
-      const channel = guild.channels.cache.get(
-        String(channelId)
-      );
+      const channel =
+        guild.channels.cache.get(
+          String(channelId)
+        );
 
       if (!channel) {
         return res.status(404).json({
@@ -92,7 +101,8 @@ module.exports = function (client) {
       // GIVEAWAY TIMING
       // ==========================================
       const durationMs =
-        Number(duration) || 3600000;
+        Number(duration) ||
+        3600000;
 
       const endsAt = new Date(
         Date.now() + durationMs
@@ -104,7 +114,7 @@ module.exports = function (client) {
         );
 
       // ==========================================
-      // BUILD REAL GIVEAWAY CONTAINER
+      // BUILD GIVEAWAY CONTAINER
       // ==========================================
       const container =
         await buildContainer(
@@ -144,7 +154,7 @@ module.exports = function (client) {
               winnerCount || 1
             }\n` +
             `**Ends:** <t:${endTimestamp}:R>\n` +
-            `**Hosted By:** <@${client.user.id}>`,
+            `**Hosted By:** <@${userId}>`,
         }
       );
 
@@ -208,7 +218,7 @@ module.exports = function (client) {
             ),
 
           hostedBy:
-            client.user.id,
+            userId,
 
           entries: [],
 
