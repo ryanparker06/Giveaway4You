@@ -77,43 +77,31 @@ module.exports = function (client) {
         .filter((channel) => {
           return (
             channel &&
-            typeof channel.isTextBased === "function" &&
-            channel.isTextBased()
+            (channel.type === 0 || channel.type === 5) &&
+            channel
+              .permissionsFor(guild.members.me)
+              ?.has(["SendMessages", "EmbedLinks"])
           );
         })
         .map((channel) => ({
           id: String(channel.id),
-          value: String(channel.id),
-
           name: channel.name,
-          label: channel.name,
-
-          type: "text",
-          channelType: "text",
-
-          isText: true,
-          text: true,
-          selectable: true,
-
-          botCanSend:
-            channel
-              .permissionsFor(guild.members.me)
-              ?.has("SendMessages") || false,
         }))
-        .filter((channel) => channel.botCanSend)
         .sort((a, b) => a.name.localeCompare(b.name));
 
       console.log(
         `📡 Returning ${channels.length} channels for ${guild.name}`
       );
 
-      // IMPORTANT:
-      // Return RAW ARRAY
-      res.json(channels);
+      return res.json({
+        success: true,
+        count: channels.length,
+        channels,
+      });
     } catch (error) {
       console.error("Error fetching guild channels:", error);
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error.message || "Failed to fetch channels",
       });
