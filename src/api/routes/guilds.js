@@ -62,7 +62,9 @@ module.exports = function (client) {
 
       console.log(`📡 CHANNELS ENDPOINT HIT FOR GUILD ${guildId}`);
 
-      const guild = client.guilds.cache.get(String(guildId));
+      // FIXED:
+      // Fetch directly from Discord instead of cache
+      const guild = await client.guilds.fetch(String(guildId));
 
       if (!guild) {
         return res.status(404).json({
