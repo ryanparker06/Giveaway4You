@@ -16,6 +16,8 @@ module.exports = function (client) {
           name: guild.name,
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
+
+          // Compatibility fields
           botInstalled: true,
           isInstalled: true,
           installed: true,
@@ -31,6 +33,7 @@ module.exports = function (client) {
       });
     } catch (error) {
       console.error("Error fetching guilds:", error);
+
       res.status(500).json({
         success: false,
         error: "Failed to fetch guilds",
@@ -48,6 +51,7 @@ module.exports = function (client) {
 
       console.log(`📡 CHANNELS ENDPOINT HIT FOR GUILD ${guildId}`);
 
+      // Get the guild
       const guild = client.guilds.cache.get(String(guildId));
 
       if (!guild) {
@@ -57,20 +61,28 @@ module.exports = function (client) {
         });
       }
 
+      // Fetch all channels from Discord
       await guild.channels.fetch();
 
+      // Filter to standard text channels only
       const channels = guild.channels.cache
         .filter((channel) => {
           return (
             channel &&
             typeof channel.isTextBased === "function" &&
             channel.isTextBased() &&
-            channel.type === 0
+            channel.type === 0 // GuildText in Discord.js v14
           );
         })
         .map((channel) => ({
           id: String(channel.id),
           name: channel.name,
+
+          // Extra fields required for dashboard compatibility
+          type: "text",
+          isText: true,
+          text: true,
+          canSend: true,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -78,13 +90,26 @@ module.exports = function (client) {
         `📡 Returning ${channels.length} text channels for ${guild.name}`
       );
 
+      // Debug output
+      if (channels.length > 0) {
+        console.log(
+          "📡 First channel returned:",
+          JSON.stringify(channels[0], null, 2)
+        );
+      }
+
       res.json({
         success: true,
         count: channels.length,
         channels,
+
+        // Additional top-level compatibility fields
+        data: channels,
+        results: channels,
       });
     } catch (error) {
       console.error("Error fetching guild channels:", error);
+
       res.status(500).json({
         success: false,
         error: error.message || "Failed to fetch channels",
@@ -134,25 +159,32 @@ module.exports = function (client) {
       res.json({
         success: true,
         guildId: String(guildId),
+
         guild: {
           id: String(guild.id),
           name: guild.name,
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
+
+          // Compatibility fields
           botInstalled: true,
           isInstalled: true,
           installed: true,
         },
+
         stats: {
           totalGiveaways,
           activeGiveaways,
           scheduledGiveaways,
           completedGiveaways,
         },
+
+        // Top-level fields for frontend compatibility
         totalGiveaways,
         activeGiveaways,
         scheduledGiveaways,
         completedGiveaways,
+
         premium: {
           active: false,
           tier: "Free",
@@ -160,6 +192,7 @@ module.exports = function (client) {
       });
     } catch (error) {
       console.error("Error fetching guild overview:", error);
+
       res.status(500).json({
         success: false,
         error: "Failed to fetch guild overview",
