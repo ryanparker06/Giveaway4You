@@ -1,4 +1,12 @@
 const express = require("express");
+const {
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
+
+const Giveaway = require("../../models/Giveaway");
 
 module.exports = function (client) {
   const router = express.Router();
@@ -33,8 +41,6 @@ module.exports = function (client) {
 
       // ==========================================
       // FETCH GUILD
-      // FIXED:
-      // Use fetch instead of cache
       // ==========================================
       const guild = await client.guilds.fetch(
         String(guildId)
@@ -72,7 +78,11 @@ module.exports = function (client) {
 
       if (
         !permissions ||
-        !permissions.has("SendMessages")
+        !permissions.has([
+          "ViewChannel",
+          "SendMessages",
+          "EmbedLinks",
+        ])
       ) {
         return res.status(403).json({
           success: false,
@@ -82,23 +92,92 @@ module.exports = function (client) {
       }
 
       // ==========================================
-      // TEST GIVEAWAY MESSAGE
+      // GIVEAWAY END TIME
+      // ==========================================
+      const endsAt =
+        Date.now() + Number(duration || 3600000);
+
+      // ==========================================
+      // CREATE EMBED
+      // ==========================================
+      const embed = new EmbedBuilder()
+        .setColor("#22c55e")
+        .setTitle("🎉 Giveaway")
+        .setDescription(
+          `${
+            description || "Click the button below to enter!"
+          }`
+        )
+        .addFields(
+          {
+            name: "🏆 Prize",
+            value: prize,
+            inline: false,
+          },
+          {
+            name: "👑 Winners",
+            value: String(winnerCount || 1),
+            inline: true,
+          },
+          {
+            name: "⏰ Ends",
+            value: `<t:${Math.floor(
+              endsAt / 1000
+            )}:R>`,
+            inline: true,
+          }
+        )
+        .setFooter({
+          text: `Hosted in ${guild.name}`,
+        })
+        .setTimestamp();
+
+      // ==========================================
+      // ENTER BUTTON
+      // ==========================================
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("giveaway_enter")
+          .setLabel("Enter Giveaway")
+          .setEmoji("🎉")
+          .setStyle(ButtonStyle.Success)
+      );
+
+      // ==========================================
+      // SEND GIVEAWAY MESSAGE
       // ==========================================
       const message = await channel.send({
-        content:
-          `🎉 **Giveaway Created!**\n\n` +
-          `🏆 Prize: ${prize}\n` +
-          `👑 Winners: ${winnerCount || 1}\n` +
-          `⏰ Duration: ${duration || 0}\n\n` +
-          `${
-            description
-              ? `📝 ${description}`
-              : ""
-          }`,
+        embeds: [embed],
+        components: [row],
       });
 
       console.log(
         `✅ Giveaway message sent to #${channel.name}`
+      );
+
+      // ==========================================
+      // SAVE TO DATABASE
+      // ==========================================
+      const giveaway = await Giveaway.create({
+        guildId: String(guildId),
+        channelId: String(channelId),
+        messageId: String(message.id),
+
+        prize,
+        description: description || "",
+
+        winnerCount: Number(winnerCount || 1),
+
+        duration: Number(duration || 3600000),
+
+        endsAt: new Date(endsAt),
+
+        ended: false,
+        participants: [],
+      });
+
+      console.log(
+        `✅ Giveaway saved to database: ${giveaway._id}`
       );
 
       // ==========================================
@@ -109,6 +188,7 @@ module.exports = function (client) {
         message: "Giveaway created successfully",
 
         giveaway: {
+          id: giveaway._id,
           guildId,
           channelId,
           messageId: message.id,
