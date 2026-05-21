@@ -6,7 +6,6 @@ module.exports = function (client) {
 
   // ==========================================
   // GET /api/guilds
-  // Returns all guilds the bot is currently in
   // ==========================================
   router.get("/", async (req, res) => {
     try {
@@ -17,7 +16,7 @@ module.exports = function (client) {
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
 
-          // ALL compatibility flags
+          // Installation flags
           bot: true,
           botInstalled: true,
           installed: true,
@@ -25,31 +24,25 @@ module.exports = function (client) {
           configured: true,
           hasBot: true,
 
-          // Dashboard permission compatibility
+          // Permission compatibility
           owner: true,
           admin: true,
           administrator: true,
           manageable: true,
 
-          // Discord permissions
           permissions: "8",
           permissions_new: "8",
 
-          // Extra compatibility
           features: [],
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
-      console.log(`📡 Returning ${guilds.length} guilds`);
+      console.log("📡 Returning guilds:");
+      console.log(guilds);
 
-      // Return MULTIPLE formats for compatibility
-      res.json({
-        success: true,
-        guilds,
-        data: guilds,
-        results: guilds,
-        items: guilds,
-      });
+      // IMPORTANT:
+      // Return RAW ARRAY ONLY
+      res.json(guilds);
     } catch (error) {
       console.error("Error fetching guilds:", error);
 
@@ -62,7 +55,6 @@ module.exports = function (client) {
 
   // ==========================================
   // GET /api/guilds/:guildId/channels
-  // Returns all text channels for the guild
   // ==========================================
   router.get("/:guildId/channels", async (req, res) => {
     try {
@@ -115,13 +107,9 @@ module.exports = function (client) {
         `📡 Returning ${channels.length} channels for ${guild.name}`
       );
 
-      res.json({
-        success: true,
-        channels,
-        data: channels,
-        results: channels,
-        items: channels,
-      });
+      // IMPORTANT:
+      // Return RAW ARRAY
+      res.json(channels);
     } catch (error) {
       console.error("Error fetching guild channels:", error);
 
@@ -202,4 +190,3 @@ module.exports = function (client) {
 
   return router;
 };
-
