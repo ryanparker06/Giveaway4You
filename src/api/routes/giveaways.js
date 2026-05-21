@@ -9,6 +9,7 @@ module.exports = function (client) {
 
   // ==========================================
   // POST /api/giveaways
+  // Create giveaway
   // ==========================================
   router.post("/", async (req, res) => {
     try {
@@ -49,7 +50,7 @@ module.exports = function (client) {
       }
 
       // ==========================================
-      // FETCH CHANNEL
+      // FETCH CHANNELS
       // ==========================================
       await guild.channels.fetch();
 
@@ -65,7 +66,7 @@ module.exports = function (client) {
       }
 
       // ==========================================
-      // CHECK PERMISSIONS
+      // CHECK BOT PERMISSIONS
       // ==========================================
       const permissions =
         channel.permissionsFor(
@@ -143,7 +144,7 @@ module.exports = function (client) {
               winnerCount || 1
             }\n` +
             `**Ends:** <t:${endTimestamp}:R>\n` +
-            `**Hosted By:** Dashboard`,
+            `**Hosted By:** <@${client.user.id}>`,
         }
       );
 
@@ -172,7 +173,7 @@ module.exports = function (client) {
       );
 
       // ==========================================
-      // SEND REAL GIVEAWAY MESSAGE
+      // SEND GIVEAWAY MESSAGE
       // ==========================================
       const message =
         await channel.send({
@@ -207,7 +208,7 @@ module.exports = function (client) {
             ),
 
           hostedBy:
-            "Dashboard",
+            client.user.id,
 
           entries: [],
 
