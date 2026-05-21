@@ -62,8 +62,7 @@ module.exports = function (client) {
 
       console.log(`📡 CHANNELS ENDPOINT HIT FOR GUILD ${guildId}`);
 
-      // FIXED:
-      // Fetch directly from Discord instead of cache
+      // Fetch directly from Discord
       const guild = await client.guilds.fetch(String(guildId));
 
       if (!guild) {
@@ -73,6 +72,7 @@ module.exports = function (client) {
         });
       }
 
+      // Fetch all channels
       await guild.channels.fetch();
 
       const channels = guild.channels.cache
@@ -81,7 +81,7 @@ module.exports = function (client) {
             channel &&
             (channel.type === 0 || channel.type === 5) &&
             channel
-              .permissionsFor(guild.members.me)
+              .permissionsFor(client.user.id)
               ?.has(["SendMessages", "EmbedLinks"])
           );
         })
@@ -134,7 +134,7 @@ module.exports = function (client) {
 
       const scheduledGiveaways = await Giveaway.countDocuments({
         guildId,
-        scheduled: true,
+       scheduled: true,
         ended: false,
       });
 
