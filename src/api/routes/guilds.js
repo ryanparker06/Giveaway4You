@@ -16,19 +16,24 @@ module.exports = function (client) {
           name: guild.name,
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
+
+          // EVERYTHING frontend could check
+          bot: true,
           botInstalled: true,
           isInstalled: true,
           installed: true,
           configured: true,
           hasBot: true,
+
+          permissions: 8,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
-      res.json({
-        success: true,
-        count: guilds.length,
-        guilds,
-      });
+      console.log(`📡 Returning ${guilds.length} guilds`);
+
+      // IMPORTANT:
+      // Return raw array for dashboard compatibility
+      res.json(guilds);
     } catch (error) {
       console.error("Error fetching guilds:", error);
 
@@ -58,67 +63,41 @@ module.exports = function (client) {
         });
       }
 
-      // Fetch all channels from Discord
       await guild.channels.fetch();
 
-      // Keep only normal text channels
       const channels = guild.channels.cache
         .filter((channel) => {
           return (
             channel &&
             typeof channel.isTextBased === "function" &&
-            channel.isTextBased() &&
-            channel.type === 0 // GuildText
+            channel.isTextBased()
           );
         })
         .map((channel) => ({
-          // Core fields
           id: String(channel.id),
           value: String(channel.id),
 
-          // Name fields
           name: channel.name,
           label: channel.name,
 
-          // Type fields
           type: "text",
           channelType: "text",
 
-          // Boolean compatibility flags
-          isText: true,
-          text: true,
-          isTextChannel: true,
-          canSend: true,
-          selectable: true,
+          botCanSend:
+            channel
+              .permissionsFor(guild.members.me)
+              ?.has("SendMessages") || false,
         }))
+        .filter((channel) => channel.botCanSend)
         .sort((a, b) => a.name.localeCompare(b.name));
 
       console.log(
-        `📡 Returning ${channels.length} text channels for ${guild.name}`
+        `📡 Returning ${channels.length} channels for ${guild.name}`
       );
 
-      if (channels.length > 0) {
-        console.log(
-          "📡 Sample channel:",
-          JSON.stringify(channels[0], null, 2)
-        );
-      }
-
-      // Return in multiple formats for maximum frontend compatibility
       res.json({
         success: true,
-        count: channels.length,
-
-        // Standard
         channels,
-
-        // Alternate common field names
-        data: channels,
-        results: channels,
-        items: channels,
-
-        // Convenience
-        hasChannels: channels.length > 0,
       });
     } catch (error) {
       console.error("Error fetching guild channels:", error);
@@ -132,7 +111,6 @@ module.exports = function (client) {
 
   // ==========================================
   // GET /api/guilds/:guildId/overview
-  // Returns dashboard overview statistics
   // ==========================================
   router.get("/:guildId/overview", async (req, res) => {
     try {
@@ -143,7 +121,7 @@ module.exports = function (client) {
       if (!guild) {
         return res.status(404).json({
           success: false,
-          error: "Guild not found or bot is not in this server",
+          error: "Guild not found",
         });
       }
 
@@ -164,48 +142,32 @@ module.exports = function (client) {
         ended: true,
       });
 
-      const totalGiveaways =
-        activeGiveaways +
-        scheduledGiveaways +
-        completedGiveaways;
-
       res.json({
         success: true,
-        guildId: String(guildId),
 
         guild: {
-          id: String(guild.id),
+          id: guild.id,
           name: guild.name,
           icon: guild.icon,
-          memberCount: guild.memberCount || 0,
-          botInstalled: true,
-          isInstalled: true,
-          installed: true,
         },
 
         stats: {
-          totalGiveaways,
+          totalGiveaways:
+            activeGiveaways +
+            scheduledGiveaways +
+            completedGiveaways,
+
           activeGiveaways,
           scheduledGiveaways,
           completedGiveaways,
         },
-
-        totalGiveaways,
-        activeGiveaways,
-        scheduledGiveaways,
-        completedGiveaways,
-
-        premium: {
-          active: false,
-          tier: "Free",
-        },
       });
     } catch (error) {
-      console.error("Error fetching guild overview:", error);
+      console.error("Overview error:", error);
 
       res.status(500).json({
         success: false,
-        error: "Failed to fetch guild overview",
+        error: "Failed to fetch overview",
       });
     }
   });

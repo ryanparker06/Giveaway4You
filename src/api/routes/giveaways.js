@@ -5,66 +5,44 @@ module.exports = function (client) {
   const router = express.Router();
 
   // ==========================================
-  // GET /api/guilds/:guildId/giveaways
-  // Returns all giveaways for a guild
-  // Supports ?status=active, ?status=scheduled, ?status=ended
+  // GET /api/guilds
+  // Returns all guilds the bot is currently in
   // ==========================================
-  router.get("/:guildId/giveaways", async (req, res) => {
+  router.get("/", async (req, res) => {
     try {
-      const { guildId } = req.params;
-      const { status } = req.query;
+      const guilds = client.guilds.cache
+        .map((guild) => ({
+          id: guild.id,
+          name: guild.name,
+          icon: guild.icon,
+          memberCount: guild.memberCount || 0,
+          botInstalled: true
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
-      // Ensure the bot is in the guild
-      const guild = client.guilds.cache.get(guildId);
-
-      if (!guild) {
-        return res.status(404).json({
-          success: false,
-          error: "Guild not found"
-        });
-      }
-
-      // Build query
-      const query = { guildId };
-
-      if (status === "active") {
-        query.ended = false;
-        query.scheduled = { $ne: true };
-      } else if (status === "scheduled") {
-        query.scheduled = true;
-        query.ended = false;
-      } else if (status === "ended") {
-        query.ended = true;
-      }
-
-      const giveaways = await Giveaway.find(query)
-        .sort({ createdAt: -1 })
-        .lean();
-
-      return res.json({
+      res.json({
         success: true,
-        count: giveaways.length,
-        giveaways
+        guilds
       });
     } catch (error) {
-      console.error("Error fetching giveaways:", error);
+      console.error("Error fetching guilds:", error);
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
-        error: "Failed to fetch giveaways"
+        error: "Failed to fetch guilds"
       });
     }
   });
 
   // ==========================================
-  // POST /api/guilds/:guildId/giveaways
-  // Creates a new giveaway from the dashboard
+  // GET /api/guilds/:guildId/channels
+  // Returns all text channels the bot can use
+  // Used for the Create Giveaway dropdown
   // ==========================================
-  router.post("/:guildId/giveaways", async (req, res) => {
+  router.get("/:guildId/channels", async (req, res) => {
     try {
       const { guildId } = req.params;
 
-      // Ensure the bot is in the guild
       const guild = client.guilds.cache.get(guildId);
 
       if (!guild) {
@@ -74,215 +52,134 @@ module.exports = function (client) {
         });
       }
 
-      const {
-        prize,
-        channelId,
-        winnerCount = 1,
-        duration = 60,
-        durationUnit = "minutes",
-        hostedBy,
-        requirements = {},
-        description = "",
-        image = null
-      } = req.body;
+      // Fetch all channels from Discord to ensure cache is complete
+      await guild.channels.fetch();
 
-      // Basic validation
-      if (!prize || !channelId) {
-        return res.status(400).json({
-          success: false,
-          error: "Prize and channelId are required"
-        });
-      }
+      const botMember = guild.members.me;
 
-      // Ensure the channel exists
-      const channel = guild.channels.cache.get(channelId);
+      const channels = guild.channels.cache
+        .filter((channel) => {
+          // Must be a text-based channel and not a thread
+          if (
+            !channel.isTextBased ||
+            !channel.isTextBased() ||
+            channel.isThread()
+          ) {
+            return false;
+          }
 
-      if (!channel) {
+          // Must have a name (skip system channels without names)
+          if (!channel.name) {
+            return false;
+          }
+
+          // If bot member exists, ensure it can send messages
+          if (botMember) {
+            const permissions = channel.permissionsFor(botMember);
+
+            if (
+              !permissions ||
+              !permissions.has("ViewChannel") ||
+              !permissions.has("SendMessages")
+            ) {
+              return false;
+            }
+          }
+
+          return true;
+        })
+        .map((channel) => ({
+          id: channel.id,
+          name: channel.name
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      res.json({
+        success: true,
+        channels
+      });
+    } catch (error) {
+      console.error("Error fetching channels:", error);
+
+      res.status(500).json({
+        success: false,
+        error: "Failed to fetch channels"
+      });
+    }
+  });
+
+  // ==========================================
+  // GET /api/guilds/:guildId/overview
+  // Returns dashboard overview statistics
+  // ==========================================
+  router.get("/:guildId/overview", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+
+      // Verify the bot is in this guild
+      const guild = client.guilds.cache.get(guildId);
+
+      if (!guild) {
         return res.status(404).json({
           success: false,
-          error: "Channel not found"
+          error: "Guild not found or bot is not in this server"
         });
       }
 
-      // Convert duration to milliseconds
-      const multipliers = {
-        minutes: 60 * 1000,
-        hours: 60 * 60 * 1000,
-        days: 24 * 60 * 60 * 1000
-      };
-
-      const ms =
-        Number(duration) *
-        (multipliers[durationUnit] || multipliers.minutes);
-
-      const endsAt = new Date(Date.now() + ms);
-
-      // Create giveaway document
-      const giveaway = await Giveaway.create({
-        // Core fields
+      // Active giveaways
+      const activeGiveaways = await Giveaway.countDocuments({
         guildId,
-        channelId,
-        prize,
-        messageId: "pending",
-
-        // Giveaway settings
-        winnerCount: Number(winnerCount) || 1,
-        hostedBy: hostedBy || "Dashboard",
-
-        // Timing
-        startAt: new Date(),
-        endsAt,
-
-        // Status flags
         ended: false,
-        scheduled: false,
-        cancelled: false,
-        paused: false,
-
-        // Optional content
-        description: description || "",
-        image: image || null,
-        requirements: requirements || {},
-
-        // Collections
-        entries: [],
-        winners: [],
-        winnerIds: [],
-        participants: [],
-
-        // Common counters
-        entryCount: 0,
-
-        // Message/embed placeholders
-        embedData: {},
-        reaction: "🎉",
-
-        // Miscellaneous placeholders
-        bonusEntries: [],
-        exemptMembers: [],
-        lastWinnerIds: []
+        scheduled: { $ne: true }
       });
 
-      return res.json({
+      // Scheduled giveaways
+      const scheduledGiveaways = await Giveaway.countDocuments({
+        guildId,
+        scheduled: true,
+        ended: false
+      });
+
+      // Completed giveaways
+      const completedGiveaways = await Giveaway.countDocuments({
+        guildId,
+        ended: true
+      });
+
+      // Total giveaways
+      const totalGiveaways =
+        activeGiveaways +
+        scheduledGiveaways +
+        completedGiveaways;
+
+      res.json({
         success: true,
-        giveaway
+        guildId,
+        guild: {
+          id: guild.id,
+          name: guild.name,
+          icon: guild.icon,
+          memberCount: guild.memberCount || 0
+        },
+        stats: {
+          totalGiveaways,
+          activeGiveaways,
+          scheduledGiveaways,
+          completedGiveaways
+        },
+
+        // Compatibility fields
+        totalGiveaways,
+        activeGiveaways,
+        scheduledGiveaways,
+        completedGiveaways
       });
     } catch (error) {
-      console.error("Create giveaway error:", error);
+      console.error("Error fetching guild overview:", error);
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
-        error: "Failed to create giveaway"
-      });
-    }
-  });
-
-  // ==========================================
-  // POST /api/guilds/:guildId/giveaways/:id/end
-  // Ends a giveaway early
-  // ==========================================
-  router.post("/:guildId/giveaways/:id/end", async (req, res) => {
-    try {
-      const { guildId, id } = req.params;
-
-      const giveaway = await Giveaway.findOne({
-        _id: id,
-        guildId
-      });
-
-      if (!giveaway) {
-        return res.status(404).json({
-          success: false,
-          error: "Giveaway not found"
-        });
-      }
-
-      giveaway.ended = true;
-      await giveaway.save();
-
-      return res.json({
-        success: true,
-        giveaway
-      });
-    } catch (error) {
-      console.error("End giveaway error:", error);
-
-      return res.status(500).json({
-        success: false,
-        error: "Failed to end giveaway"
-      });
-    }
-  });
-
-  // ==========================================
-  // POST /api/guilds/:guildId/giveaways/:id/reroll
-  // Placeholder reroll endpoint
-  // ==========================================
-  router.post("/:guildId/giveaways/:id/reroll", async (req, res) => {
-    try {
-      const { guildId, id } = req.params;
-
-      const giveaway = await Giveaway.findOne({
-        _id: id,
-        guildId
-      });
-
-      if (!giveaway) {
-        return res.status(404).json({
-          success: false,
-          error: "Giveaway not found"
-        });
-      }
-
-      return res.json({
-        success: true,
-        message: "Reroll endpoint is ready",
-        giveaway
-      });
-    } catch (error) {
-      console.error("Reroll giveaway error:", error);
-
-      return res.status(500).json({
-        success: false,
-        error: "Failed to reroll giveaway"
-      });
-    }
-  });
-
-  // ==========================================
-  // POST /api/guilds/:guildId/giveaways/:id/cancel
-  // Cancels a giveaway
-  // ==========================================
-  router.post("/:guildId/giveaways/:id/cancel", async (req, res) => {
-    try {
-      const { guildId, id } = req.params;
-
-      const giveaway = await Giveaway.findOne({
-        _id: id,
-        guildId
-      });
-
-      if (!giveaway) {
-        return res.status(404).json({
-          success: false,
-          error: "Giveaway not found"
-        });
-      }
-
-      giveaway.ended = true;
-      giveaway.cancelled = true;
-      await giveaway.save();
-
-      return res.json({
-        success: true,
-        giveaway
-      });
-    } catch (error) {
-      console.error("Cancel giveaway error:", error);
-
-      return res.status(500).json({
-        success: false,
-        error: "Failed to cancel giveaway"
+        error: "Failed to fetch guild overview"
       });
     }
   });
