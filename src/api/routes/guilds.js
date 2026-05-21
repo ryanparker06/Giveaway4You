@@ -40,8 +40,6 @@ module.exports = function (client) {
       console.log("📡 Returning guilds:");
       console.log(guilds);
 
-      // IMPORTANT:
-      // Return RAW ARRAY ONLY
       res.json(guilds);
     } catch (error) {
       console.error("Error fetching guilds:", error);
@@ -62,7 +60,7 @@ module.exports = function (client) {
 
       console.log(`📡 CHANNELS ENDPOINT HIT FOR GUILD ${guildId}`);
 
-      // Fetch directly from Discord
+      // Fetch guild directly from Discord
       const guild = await client.guilds.fetch(String(guildId));
 
       if (!guild) {
@@ -72,17 +70,30 @@ module.exports = function (client) {
         });
       }
 
-      // Fetch all channels
+      // Fetch channels
       await guild.channels.fetch();
+
+      // FIX:
+      // Fetch bot member correctly
+      const botMember = await guild.members.fetch(client.user.id);
 
       const channels = guild.channels.cache
         .filter((channel) => {
+          if (!channel) return false;
+
+          // Text + announcement channels only
+          const validType =
+            channel.type === 0 || channel.type === 5;
+
+          if (!validType) return false;
+
+          // Check bot permissions
+          const permissions = channel.permissionsFor(botMember);
+
           return (
-            channel &&
-            (channel.type === 0 || channel.type === 5) &&
-            channel
-              .permissionsFor(client.members.me)
-              ?.has(["SendMessages", "EmbedLinks"])
+            permissions &&
+            permissions.has("SendMessages") &&
+            permissions.has("EmbedLinks")
           );
         })
         .map((channel) => ({
@@ -101,7 +112,7 @@ module.exports = function (client) {
         channels,
       });
     } catch (error) {
-      console.error("Error fetching guild channels:", error);
+      console.error("CHANNELS ERROR:", error);
 
       return res.status(500).json({
         success: false,
