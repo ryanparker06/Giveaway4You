@@ -6,8 +6,6 @@ module.exports = function startApi(client) {
 
   // ==========================================
   // CORS CONFIGURATION
-  // Allows your Vercel dashboard, custom domain,
-  // localhost, and all Vercel preview deployments
   // ==========================================
   const allowedOrigins = [
     process.env.DASHBOARD_URL ||
@@ -22,19 +20,15 @@ module.exports = function startApi(client) {
   app.use(
     cors({
       origin: function (origin, callback) {
-        // Allow requests with no origin
-        // (Postman, curl, health checks, server-to-server)
         if (!origin) {
           return callback(null, true);
         }
 
-        // Allow exact matches from the whitelist
         if (allowedOrigins.includes(origin)) {
           console.log(`✅ Allowed by CORS: ${origin}`);
           return callback(null, true);
         }
 
-        // Allow all Vercel deployments automatically
         if (origin.endsWith(".vercel.app")) {
           console.log(
             `✅ Allowed dynamic Vercel origin: ${origin}`
@@ -42,7 +36,6 @@ module.exports = function startApi(client) {
           return callback(null, true);
         }
 
-        // Allow Giveaway4You domains and subdomains
         if (
           origin.includes("giveaway4you.com") ||
           origin.includes("giveaway4you")
@@ -53,13 +46,15 @@ module.exports = function startApi(client) {
           return callback(null, true);
         }
 
-        // Block everything else
         console.log(`❌ Blocked by CORS: ${origin}`);
+
         return callback(
           new Error("Not allowed by CORS")
         );
       },
+
       credentials: true,
+
       methods: [
         "GET",
         "POST",
@@ -68,6 +63,7 @@ module.exports = function startApi(client) {
         "DELETE",
         "OPTIONS"
       ],
+
       allowedHeaders: [
         "Content-Type",
         "Authorization",
@@ -76,7 +72,9 @@ module.exports = function startApi(client) {
     })
   );
 
-  // Parse JSON request bodies
+  // ==========================================
+  // JSON PARSER
+  // ==========================================
   app.use(express.json());
 
   // ==========================================
@@ -118,10 +116,12 @@ module.exports = function startApi(client) {
   );
 
   // ==========================================
-  // GIVEAWAYS ROUTES (REQUIRED FOR DASHBOARD)
+  // GIVEAWAYS ROUTES
+  // FIXED:
+  // Mount under /api/giveaways
   // ==========================================
   app.use(
-    "/api/guilds",
+    "/api/giveaways",
     require("./routes/giveaways")(client)
   );
 
@@ -142,7 +142,6 @@ module.exports = function startApi(client) {
   app.use((err, req, res, next) => {
     console.error("API Error:", err);
 
-    // Special handling for CORS errors
     if (err.message === "Not allowed by CORS") {
       return res.status(403).json({
         success: false,
