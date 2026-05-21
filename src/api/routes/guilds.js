@@ -16,8 +16,6 @@ module.exports = function (client) {
           name: guild.name,
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
-
-          // Compatibility fields
           botInstalled: true,
           isInstalled: true,
           installed: true,
@@ -51,7 +49,6 @@ module.exports = function (client) {
 
       console.log(`📡 CHANNELS ENDPOINT HIT FOR GUILD ${guildId}`);
 
-      // Get the guild
       const guild = client.guilds.cache.get(String(guildId));
 
       if (!guild) {
@@ -64,25 +61,35 @@ module.exports = function (client) {
       // Fetch all channels from Discord
       await guild.channels.fetch();
 
-      // Filter to standard text channels only
+      // Keep only normal text channels
       const channels = guild.channels.cache
         .filter((channel) => {
           return (
             channel &&
             typeof channel.isTextBased === "function" &&
             channel.isTextBased() &&
-            channel.type === 0 // GuildText in Discord.js v14
+            channel.type === 0 // GuildText
           );
         })
         .map((channel) => ({
+          // Core fields
           id: String(channel.id),
-          name: channel.name,
+          value: String(channel.id),
 
-          // Extra fields required for dashboard compatibility
+          // Name fields
+          name: channel.name,
+          label: channel.name,
+
+          // Type fields
           type: "text",
+          channelType: "text",
+
+          // Boolean compatibility flags
           isText: true,
           text: true,
+          isTextChannel: true,
           canSend: true,
+          selectable: true,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -90,22 +97,28 @@ module.exports = function (client) {
         `📡 Returning ${channels.length} text channels for ${guild.name}`
       );
 
-      // Debug output
       if (channels.length > 0) {
         console.log(
-          "📡 First channel returned:",
+          "📡 Sample channel:",
           JSON.stringify(channels[0], null, 2)
         );
       }
 
+      // Return in multiple formats for maximum frontend compatibility
       res.json({
         success: true,
         count: channels.length,
+
+        // Standard
         channels,
 
-        // Additional top-level compatibility fields
+        // Alternate common field names
         data: channels,
         results: channels,
+        items: channels,
+
+        // Convenience
+        hasChannels: channels.length > 0,
       });
     } catch (error) {
       console.error("Error fetching guild channels:", error);
@@ -165,8 +178,6 @@ module.exports = function (client) {
           name: guild.name,
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
-
-          // Compatibility fields
           botInstalled: true,
           isInstalled: true,
           installed: true,
@@ -179,7 +190,6 @@ module.exports = function (client) {
           completedGiveaways,
         },
 
-        // Top-level fields for frontend compatibility
         totalGiveaways,
         activeGiveaways,
         scheduledGiveaways,
