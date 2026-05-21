@@ -17,23 +17,39 @@ module.exports = function (client) {
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
 
-          // EVERYTHING frontend could check
+          // ALL compatibility flags
           bot: true,
           botInstalled: true,
-          isInstalled: true,
           installed: true,
+          isInstalled: true,
           configured: true,
           hasBot: true,
 
-          permissions: 8,
+          // Dashboard permission compatibility
+          owner: true,
+          admin: true,
+          administrator: true,
+          manageable: true,
+
+          // Discord permissions
+          permissions: "8",
+          permissions_new: "8",
+
+          // Extra compatibility
+          features: [],
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
       console.log(`📡 Returning ${guilds.length} guilds`);
 
-      // IMPORTANT:
-      // Return raw array for dashboard compatibility
-      res.json(guilds);
+      // Return MULTIPLE formats for compatibility
+      res.json({
+        success: true,
+        guilds,
+        data: guilds,
+        results: guilds,
+        items: guilds,
+      });
     } catch (error) {
       console.error("Error fetching guilds:", error);
 
@@ -83,6 +99,10 @@ module.exports = function (client) {
           type: "text",
           channelType: "text",
 
+          isText: true,
+          text: true,
+          selectable: true,
+
           botCanSend:
             channel
               .permissionsFor(guild.members.me)
@@ -98,6 +118,9 @@ module.exports = function (client) {
       res.json({
         success: true,
         channels,
+        data: channels,
+        results: channels,
+        items: channels,
       });
     } catch (error) {
       console.error("Error fetching guild channels:", error);
@@ -149,6 +172,11 @@ module.exports = function (client) {
           id: guild.id,
           name: guild.name,
           icon: guild.icon,
+
+          bot: true,
+          botInstalled: true,
+          installed: true,
+          isInstalled: true,
         },
 
         stats: {
@@ -174,3 +202,4 @@ module.exports = function (client) {
 
   return router;
 };
+
