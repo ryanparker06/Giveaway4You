@@ -1,19 +1,14 @@
 const express = require("express");
-const {
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require("discord.js");
+const { MessageFlags } = require("discord.js");
 
 const Giveaway = require("../../models/Giveaway");
+const buildContainer = require("../../utils/buildContainer");
 
 module.exports = function (client) {
   const router = express.Router();
 
   // ==========================================
   // POST /api/giveaways
-  // Create giveaway
   // ==========================================
   router.post("/", async (req, res) => {
     try {
@@ -54,7 +49,7 @@ module.exports = function (client) {
       }
 
       // ==========================================
-      // FETCH CHANNELS
+      // FETCH CHANNEL
       // ==========================================
       await guild.channels.fetch();
 
@@ -70,11 +65,12 @@ module.exports = function (client) {
       }
 
       // ==========================================
-      // CHECK BOT PERMISSIONS
+      // CHECK PERMISSIONS
       // ==========================================
-      const permissions = channel.permissionsFor(
-        guild.members.me
-      );
+      const permissions =
+        channel.permissionsFor(
+          guild.members.me
+        );
 
       if (
         !permissions ||
@@ -92,92 +88,139 @@ module.exports = function (client) {
       }
 
       // ==========================================
-      // GIVEAWAY END TIME
+      // GIVEAWAY TIMING
       // ==========================================
-      const endsAt =
-        Date.now() + Number(duration || 3600000);
+      const durationMs =
+        Number(duration) || 3600000;
+
+      const endsAt = new Date(
+        Date.now() + durationMs
+      );
+
+      const endTimestamp =
+        Math.floor(
+          endsAt.getTime() / 1000
+        );
 
       // ==========================================
-      // CREATE EMBED
+      // BUILD REAL GIVEAWAY CONTAINER
       // ==========================================
-      const embed = new EmbedBuilder()
-        .setColor("#22c55e")
-        .setTitle("🎉 Giveaway")
-        .setDescription(
-          `${
-            description || "Click the button below to enter!"
-          }`
-        )
-        .addFields(
-          {
-            name: "🏆 Prize",
-            value: prize,
-            inline: false,
-          },
-          {
-            name: "👑 Winners",
-            value: String(winnerCount || 1),
-            inline: true,
-          },
-          {
-            name: "⏰ Ends",
-            value: `<t:${Math.floor(
-              endsAt / 1000
-            )}:R>`,
-            inline: true,
-          }
-        )
-        .setFooter({
-          text: `Hosted in ${guild.name}`,
-        })
-        .setTimestamp();
+      const container =
+        await buildContainer(
+          "",
+          null,
+          guild.id
+        );
 
-      // ==========================================
-      // ENTER BUTTON
-      // ==========================================
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("giveaway_enter")
-          .setLabel("Enter Giveaway")
-          .setEmoji("🎉")
-          .setStyle(ButtonStyle.Success)
+      // Title
+      container[0].components[0] = {
+        type: 10,
+        content:
+          "# 🎉 Giveaway Started",
+      };
+
+      // Separator
+      container[0].components.splice(
+        1,
+        0,
+        {
+          type: 14,
+          divider: true,
+          spacing: 2,
+        }
+      );
+
+      // Giveaway information
+      container[0].components.splice(
+        2,
+        0,
+        {
+          type: 10,
+          content:
+            `**Prize:** ${prize}\n` +
+            `**Participants:** 0\n` +
+            `**Winners:** ${
+              winnerCount || 1
+            }\n` +
+            `**Ends:** <t:${endTimestamp}:R>\n` +
+            `**Hosted By:** Dashboard`,
+        }
+      );
+
+      // Button section
+      container[0].components.splice(
+        3,
+        0,
+        {
+          type: 9,
+          components: [
+            {
+              type: 10,
+              content:
+                "Click the button to enter/exit the giveaway!",
+            },
+          ],
+          accessory: {
+            type: 2,
+            style: 1,
+            custom_id:
+              "giveaway_enter",
+            label:
+              "🎉 Enter Giveaway",
+          },
+        }
       );
 
       // ==========================================
-      // SEND GIVEAWAY MESSAGE
+      // SEND REAL GIVEAWAY MESSAGE
       // ==========================================
-      const message = await channel.send({
-        embeds: [embed],
-        components: [row],
-      });
+      const message =
+        await channel.send({
+          flags:
+            MessageFlags.IsComponentsV2,
+          components:
+            container,
+        });
 
       console.log(
-        `✅ Giveaway message sent to #${channel.name}`
+        `✅ Giveaway sent to #${channel.name}`
       );
 
       // ==========================================
-      // SAVE TO DATABASE
+      // SAVE GIVEAWAY TO DATABASE
       // ==========================================
-      const giveaway = await Giveaway.create({
-        guildId: String(guildId),
-        channelId: String(channelId),
-        messageId: String(message.id),
+      const giveaway =
+        await Giveaway.create({
+          guildId: guild.id,
 
-        prize,
-        description: description || "",
+          channelId:
+            channel.id,
 
-        winnerCount: Number(winnerCount || 1),
+          messageId:
+            String(message.id),
 
-        duration: Number(duration || 3600000),
+          prize,
 
-        endsAt: new Date(endsAt),
+          winnerCount:
+            Number(
+              winnerCount || 1
+            ),
 
-        ended: false,
-        participants: [],
-      });
+          hostedBy:
+            "Dashboard",
+
+          entries: [],
+
+          endsAt,
+
+          ended: false,
+
+          description:
+            description || "",
+        });
 
       console.log(
-        `✅ Giveaway saved to database: ${giveaway._id}`
+        `✅ Giveaway saved: ${giveaway._id}`
       );
 
       // ==========================================
@@ -185,17 +228,17 @@ module.exports = function (client) {
       // ==========================================
       return res.json({
         success: true,
-        message: "Giveaway created successfully",
+        message:
+          "Giveaway created successfully",
 
         giveaway: {
           id: giveaway._id,
-          guildId,
-          channelId,
-          messageId: message.id,
-          prize,
-          winnerCount: winnerCount || 1,
-          duration,
-          description: description || "",
+          guildId:
+            guild.id,
+          channelId:
+            channel.id,
+          messageId:
+            message.id,
         },
       });
     } catch (error) {
