@@ -81,7 +81,7 @@ module.exports = function (client) {
             channel &&
             (channel.type === 0 || channel.type === 5) &&
             channel
-              .permissionsFor(client.user.id)
+              .permissionsFor(client.members.me)
               ?.has(["SendMessages", "EmbedLinks"])
           );
         })
@@ -134,7 +134,7 @@ module.exports = function (client) {
 
       const scheduledGiveaways = await Giveaway.countDocuments({
         guildId,
-       scheduled: true,
+        scheduled: true,
         ended: false,
       });
 
