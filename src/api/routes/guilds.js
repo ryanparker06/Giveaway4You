@@ -16,7 +16,6 @@ module.exports = function (client) {
           icon: guild.icon,
           memberCount: guild.memberCount || 0,
 
-          // Installation flags
           bot: true,
           botInstalled: true,
           installed: true,
@@ -24,7 +23,6 @@ module.exports = function (client) {
           configured: true,
           hasBot: true,
 
-          // Permission compatibility
           owner: true,
           admin: true,
           administrator: true,
@@ -60,7 +58,6 @@ module.exports = function (client) {
 
       console.log(`📡 CHANNELS ENDPOINT HIT FOR GUILD ${guildId}`);
 
-      // Fetch guild directly from Discord
       const guild = await client.guilds.fetch(String(guildId));
 
       if (!guild) {
@@ -70,25 +67,21 @@ module.exports = function (client) {
         });
       }
 
-      // Fetch channels
       await guild.channels.fetch();
 
-      // FIX:
-      // Fetch bot member correctly
       const botMember = await guild.members.fetch(client.user.id);
 
       const channels = guild.channels.cache
         .filter((channel) => {
           if (!channel) return false;
 
-          // Text + announcement channels only
           const validType =
             channel.type === 0 || channel.type === 5;
 
           if (!validType) return false;
 
-          // Check bot permissions
-          const permissions = channel.permissionsFor(botMember);
+          const permissions =
+            channel.permissionsFor(botMember);
 
           return (
             permissions &&
@@ -117,6 +110,49 @@ module.exports = function (client) {
       return res.status(500).json({
         success: false,
         error: error.message || "Failed to fetch channels",
+      });
+    }
+  });
+
+  // ==========================================
+  // GET /api/guilds/:guildId/giveaways
+  // REQUIRED FOR DASHBOARD
+  // ==========================================
+  router.get("/:guildId/giveaways", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const { status } = req.query;
+
+      let query = {
+        guildId: String(guildId),
+      };
+
+      if (status === "active") {
+        query.ended = false;
+      }
+
+      if (status === "completed") {
+        query.ended = true;
+      }
+
+      const giveaways = await Giveaway.find(query)
+        .sort({ createdAt: -1 });
+
+      return res.json({
+        success: true,
+        giveaways,
+      });
+    } catch (error) {
+      console.error(
+        "Fetch giveaways error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        error:
+          error.message ||
+          "Failed to fetch giveaways",
       });
     }
   });
