@@ -369,5 +369,7 @@ module.exports = async function endGiveaway(
       "Error ending giveaway:",
       error
     );
+
+    throw error;
   }
 };
