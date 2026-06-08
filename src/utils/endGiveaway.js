@@ -45,21 +45,89 @@ module.exports = async function endGiveaway(
      * DETERMINE WINNERS
      */
     let winners = [];
-
+    
     if (!cancelled) {
       if (giveaway.winnerIds.length > 0) {
         winners = [...giveaway.winnerIds];
       } else if (giveaway.entries.length > 0) {
-        const shuffled = [...giveaway.entries].sort(
-          () => Math.random() - 0.5
-        );
+        const guild =
+          await client.guilds.fetch(
+            giveaway.guildId
+          );
+
+        let ticketPool = [];
+
+        for (const userId of giveaway.entries) {
+          let tickets = 1;
+
+          try {
+            const member =
+              await guild.members.fetch(
+                userId
+              );
+
+            if (
+              Array.isArray(
+                giveaway.bonusEntries
+              )
+            ) {
+              for (const bonus of giveaway.bonusEntries) {
+                if (
+                  bonus?.roleId &&
+                  member.roles.cache.has(
+                    bonus.roleId
+                  )
+                ) {
+                  tickets +=
+                    Number(
+                      bonus.entries || 0
+                    );
+                }
+              }
+            }
+          } catch (error) {
+            console.error(
+              `Failed to check roles for ${userId}:`,
+              error
+            );
+          }
+
+          for (
+            let i = 0;
+            i < tickets;
+            i++
+          ) {
+            ticketPool.push(userId);
+          }
+        }
 
         const winnerCount =
           giveaway.winnerCount ||
           giveaway.winners ||
           1;
 
-        winners = shuffled.slice(0, winnerCount);
+        const selected = new Set();
+
+        while (
+          selected.size < winnerCount &&
+          ticketPool.length > 0
+        ) {
+          const index = Math.floor(
+            Math.random() *
+              ticketPool.length
+          );
+
+          const winner =
+            ticketPool[index];
+
+          selected.add(winner);
+
+          ticketPool = ticketPool.filter(
+            (id) => id !== winner
+          );
+        }
+
+        winners = [...selected];
         giveaway.winnerIds = [...winners];
       }
     }
