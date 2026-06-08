@@ -66,8 +66,13 @@ default: false
 // ==========================================
 
 bonusEntries: {
-type: Number,
-default: 0
+  type: [
+    {
+      roleId: String,
+      entries: Number
+    }
+  ],
+  default: []
 },
 
 // ==========================================
