@@ -21,6 +21,9 @@ module.exports = function (client) {
         duration,
         description,
         userId,
+        scheduledStart,
+        bonusEntries,
+        requiredRoles,
       } = req.body;
 
       console.log("🎉 CREATE GIVEAWAY REQUEST:");
@@ -112,6 +115,107 @@ module.exports = function (client) {
         Math.floor(
           endsAt.getTime() / 1000
         );
+
+  // ==========================================
+  // SCHEDULED GIVEAWAY
+  // ==========================================
+if (scheduledStart) {
+  console.log(
+    "📅 SCHEDULED GIVEAWAY DETECTED",
+    scheduledStart
+  );
+
+  const startDate = new Date(
+    scheduledStart
+  );
+
+    if (
+      Number.isNaN(
+        startDate.getTime()
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Invalid scheduled start date",
+      });
+    }
+
+    if (
+      startDate.getTime() <=
+      Date.now()
+    ) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Scheduled start must be in the future",
+      });
+    }
+
+    const scheduledEndsAt =
+      new Date(
+        startDate.getTime() +
+          durationMs
+      );
+
+    const giveaway =
+      await Giveaway.create({
+        guildId: guild.id,
+        channelId:
+          channel.id,
+
+        messageId:
+          `scheduled_${Date.now()}_${Math.random()
+            .toString(36)
+            .slice(2, 8)}`,
+
+        prize,
+
+        winnerCount:
+          Number(
+            winnerCount || 1
+          ),
+
+        hostedBy:
+          userId,
+
+        entries: [],
+
+        endsAt:
+          scheduledEndsAt,
+
+        endTime:
+          scheduledEndsAt,
+
+        ended: false,
+
+        description:
+          description || "",
+
+        bonusEntries:
+          Number(
+            bonusEntries || 0
+          ),
+
+        requiredRoles:
+          requiredRoles || [],
+
+        scheduled: true,
+        scheduledStart:
+          startDate,
+        started: false,
+      });
+
+    return res.json({
+      success: true,
+      message:
+        "Giveaway scheduled successfully",
+
+      giveaway: {
+        id: giveaway._id,
+      },
+    });
+  }
 
       // ==========================================
       // BUILD GIVEAWAY CONTAINER
