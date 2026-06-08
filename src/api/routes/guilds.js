@@ -117,6 +117,51 @@ const { guildId } = req.params;
 });
 
 // ==========================================
+// GET /api/guilds/:guildId/roles
+// ==========================================
+router.get("/:guildId/roles", async (req, res) => {
+  try {
+    const { guildId } = req.params;
+
+    const guild = await client.guilds.fetch(
+      String(guildId)
+    );
+
+    if (!guild) {
+      return res.status(404).json({
+        success: false,
+        error: "Guild not found",
+      });
+    }
+
+    await guild.roles.fetch();
+
+    const roles = guild.roles.cache
+      .filter((role) => !role.managed)
+      .sort((a, b) => b.position - a.position)
+      .map((role) => ({
+        id: String(role.id),
+        name: role.name,
+      }));
+
+    return res.json({
+      success: true,
+      roles,
+    });
+  } catch (error) {
+    console.error(
+      "Fetch roles error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch roles",
+    });
+  }
+});
+
+// ==========================================
 // GET /api/guilds/:guildId/giveaways
 // REQUIRED FOR DASHBOARD
 // ==========================================
