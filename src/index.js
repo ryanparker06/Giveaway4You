@@ -134,11 +134,10 @@ async function buildGiveawayComponents(
   )
     ? giveaway.entries
     : [];
-
-  const isEntered =
-    userId && entries.includes(userId);
-
-  const endTimestamp = Math.floor(
+    
+    const isEntered = false;
+    
+    const endTimestamp = Math.floor(
     new Date(giveaway.endsAt).getTime() / 1000
   );
 
@@ -184,14 +183,10 @@ async function buildGiveawayComponents(
       }
     ],
     accessory: {
-      type: 2, // Button
-      style: isEntered ? 4 : 1,
-      custom_id: isEntered
-        ? "giveaway_exit"
-        : "giveaway_enter",
-      label: isEntered
-        ? "❌ Exit Giveaway"
-        : "🎉 Enter Giveaway"
+      type: 2,
+      style: 1,
+      custom_id: "giveaway_enter",
+      label: "🎉 Enter Giveaway"
     }
   });
 
@@ -255,14 +250,10 @@ client.on("interactionCreate", async (interaction) => {
       // Acknowledge interaction immediately
       await interaction.deferUpdate();
 
-      // ==========================================
-      // EXIT GIVEAWAY
-      // ==========================================
-      if (
-        interaction.customId ===
-          "giveaway_exit" &&
-        isEntered
-      ) {
+// ==========================================
+// LEAVE GIVEAWAY IF ALREADY ENTERED
+// ==========================================
+      if (isEntered) {
         giveaway.entries =
           giveaway.entries.filter(
             (id) => id !== userId
@@ -275,8 +266,7 @@ client.on("interactionCreate", async (interaction) => {
             MessageFlags.IsComponentsV2,
           components:
             await buildGiveawayComponents(
-              giveaway,
-              null
+              giveaway
             )
         });
 
