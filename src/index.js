@@ -178,11 +178,11 @@ async function buildGiveawayComponents(
   container[0].components.splice(2, 0, {
     type: 10, // Text Display
     content:
-      `**Prize:** ${giveaway.prize}\n` +
-      `**Participants:** ${entries.length}\n` +
-      `**Winners:** ${giveaway.winnerCount}\n` +
-      `**Ends:** <t:${endTimestamp}:R>\n` +
-      `**Hosted By:** <@${giveaway.hostedBy}>` +
+      `Prize: ${giveaway.prize}\n` +
+      `Participants: ${entries.length}\n` +
+      `Winners: ${giveaway.winnerCount}\n` +
+      `Ends: <t:${endTimestamp}:R>\n` +
+      `Hosted By: <@${giveaway.hostedBy}>` +
       bonusRolesText
   });
 

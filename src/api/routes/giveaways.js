@@ -265,13 +265,13 @@ if (scheduledStart) {
         {
           type: 10,
           content:
-            `**Prize:** ${prize}\n` +
-            `**Participants:** 0\n` +
-            `**Winners:** ${
+            `Prize: ${prize}\n` +
+            `Participants: 0\n` +
+            `Winners: ${
               winnerCount || 1
             }\n` +
-            `**Ends:** <t:${endTimestamp}:R>\n` +
-            `**Hosted By:** <@${userId}>` +
+            `Ends: <t:${endTimestamp}:R>\n` +
+            `Hosted By: <@${userId}>` +
             bonusRolesText,
         }
       );
