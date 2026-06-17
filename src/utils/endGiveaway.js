@@ -454,12 +454,25 @@ module.exports = async function endGiveaway(
       "📢 Sending winner announcement..."
     );
 
-    // Send winner announcement
-   
+    console.log(
+      "📢 Channel Name:",
+      channel.name
+    );
+
+    console.log(
+      "📢 Channel ID:",
+      channel.id
+    );
+
+    console.log(
+      "📢 Giveaway Channel ID:",
+      giveaway.channelId
+    );
+
     await channel.send({
       content:
-      `🎉 Congratulations ${winnerMentions}!\n\n` +
-      `You won **${giveaway.prize}**`
+        `🎉 Congratulations ${winnerMentions}!\n\n` +
+        `You won **${giveaway.prize}**`
     });
 
     console.log(
