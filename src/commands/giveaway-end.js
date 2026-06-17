@@ -108,22 +108,27 @@ module.exports = {
       });
     }
 
-    // ==========================================
-    // END GIVEAWAY
-    // ==========================================
-    await endGiveaway(
-      interaction.client,
-      giveaway,
-      false
-    );
+          // ==========================================
+      // ACKNOWLEDGE INTERACTION
+      // ==========================================
+      await interaction.deferReply({
+        flags: MessageFlags.Ephemeral
+      });
 
-    // ==========================================
-    // CONFIRM SUCCESS
-    // ==========================================
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
-      content:
+      // ==========================================
+      // END GIVEAWAY
+      // ==========================================
+      await endGiveaway(
+        interaction.client,
+        giveaway,
+        false
+      );
+
+      // ==========================================
+      // CONFIRM SUCCESS
+      // ==========================================
+      await interaction.editReply(
         "🏁 Giveaway ended successfully."
-    });
-  }
-};
+      );
+    }
+  };
