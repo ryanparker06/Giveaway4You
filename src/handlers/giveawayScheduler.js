@@ -88,10 +88,10 @@ for (const giveaway of scheduledGiveaways) {
       {
         type: 10, // Text Display
         content:
-          `<:rightarrow:1516933117120741519> Hosted By: <@${giveaway.hostedBy}>\n` +
-          `<:rightarrow:1516933117120741519> Winners: ${giveaway.winnerCount}\n\n` +
-          `<:rightarrow:1516933117120741519> Participants: 0\n` +
-          `<:rightarrow:1516933117120741519> Ends: <t:${endTimestamp}:R>` +
+          `<:rightarrow:1516932908420562994> Hosted By: <@${giveaway.hostedBy}>\n` +
+          `<:rightarrow:1516932908420562994> Winners: ${giveaway.winnerCount}\n\n` +
+          `<:rightarrow:1516932908420562994> Participants: 0\n` +
+          `<:rightarrow:1516932908420562994> Ends: <t:${endTimestamp}:R>` +
           bonusRolesText
       }
     );
