@@ -252,7 +252,7 @@ container[0].components[0] = {
             bonusEntries
               .map(
                 (b) =>
-                  `<:bulletpoint:1516938722376024274> <@&${b.roleId}> (+${b.entries})`
+                  `<:bulletpoint:1516939993644404746> <@&${b.roleId}> (+${b.entries})`
               )
               .join("\n")
           : "";
@@ -264,12 +264,12 @@ container[0].components[0] = {
         {
           type: 10,
           content:
-            `<:bulletpoint:1516938722376024274> Hosted By: <@${userId}>\n` +
-            `<:bulletpoint:1516938722376024274> Winners: ${
+            `<:bulletpoint:1516939993644404746> Hosted By: <@${userId}>\n` +
+            `<:bulletpoint:1516939993644404746> Winners: ${
               winnerCount || 1
             }\n\n` +
-            `<:bulletpoint:1516938722376024274> Participants: 0\n` +
-            `<:bulletpoint:1516938722376024274> Ends: <t:${endTimestamp}:R>` +
+            `<:bulletpoint:1516939993644404746> Participants: 0\n` +
+            `<:bulletpoint:1516939993644404746> Ends: <t:${endTimestamp}:R>` +
             bonusRolesText,
         }
       );

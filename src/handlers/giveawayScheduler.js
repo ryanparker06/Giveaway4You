@@ -76,7 +76,7 @@ for (const giveaway of scheduledGiveaways) {
           giveaway.bonusEntries
             .map(
               (b) =>
-                `<:bulletpoint:1516938722376024274> <@&${b.roleId}> (+${b.entries})`
+                `<:bulletpoint:1516939993644404746> <@&${b.roleId}> (+${b.entries})`
             )
             .join("\n")
         : "";
@@ -88,10 +88,10 @@ for (const giveaway of scheduledGiveaways) {
       {
         type: 10, // Text Display
         content:
-          `<:bulletpoint:1516938722376024274> Hosted By: <@${giveaway.hostedBy}>\n` +
-          `<:bulletpoint:1516938722376024274> Winners: ${giveaway.winnerCount}\n\n` +
-          `<:bulletpoint:1516938722376024274> Participants: 0\n` +
-          `<:bulletpoint:1516938722376024274> Ends: <t:${endTimestamp}:R>` +
+          `<:bulletpoint:1516939993644404746> Hosted By: <@${giveaway.hostedBy}>\n` +
+          `<:bulletpoint:1516939993644404746> Winners: ${giveaway.winnerCount}\n\n` +
+          `<:bulletpoint:1516939993644404746> Participants: 0\n` +
+          `<:bulletpoint:1516939993644404746> Ends: <t:${endTimestamp}:R>` +
           bonusRolesText
       }
     );
