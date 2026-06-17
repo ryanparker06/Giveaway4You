@@ -252,7 +252,7 @@ container[0].components[0] = {
             bonusEntries
               .map(
                 (b) =>
-                  `<@&${b.roleId}> (+${b.entries})`
+                  `<:rightarrow:1516932908420562994> <@&${b.roleId}> (+${b.entries})`
               )
               .join("\n")
           : "";
