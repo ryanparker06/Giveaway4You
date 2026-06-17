@@ -219,7 +219,10 @@ client.on("interactionCreate", async (interaction) => {
       }
 
         // Acknowledge interaction immediately
-        await interaction.deferUpdate();
+    
+        if (!interaction.deferred && !interaction.replied) {
+          await interaction.deferUpdate();
+        }
 
       const giveaway = await Giveaway.findOne({
         messageId: String(
