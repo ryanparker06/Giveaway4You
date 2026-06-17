@@ -8,8 +8,8 @@ module.exports = {
     // Buttons
     enterButtonLabel: "Enter/Exit",
     exitButtonLabel: "Enter/Exit",
-    enterButtonEmoji: "🎉",
-    exitButtonEmoji: "❌",
+    enterButtonEmoji: "",
+    exitButtonEmoji: "",
 
     // Footer / hosted by text
     hostedByText: "Hosted by {tag}",

@@ -184,7 +184,7 @@ async function buildGiveawayComponents(
       type: 2,
       style: 1,
       custom_id: "giveaway_enter",
-      label: "🎉 Enter Giveaway"
+      label: "Enter/Exit"
     }
   });
 
