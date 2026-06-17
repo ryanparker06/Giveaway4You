@@ -218,6 +218,9 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
 
+        // Acknowledge interaction immediately
+        await interaction.deferUpdate();
+
       const giveaway = await Giveaway.findOne({
         messageId: String(
           interaction.message.id
@@ -259,9 +262,6 @@ client.on("interactionCreate", async (interaction) => {
         giveaway.entries.includes(
           userId
         );
-
-      // Acknowledge interaction immediately
-      await interaction.deferUpdate();
 
 // ==========================================
 // LEAVE GIVEAWAY IF ALREADY ENTERED
