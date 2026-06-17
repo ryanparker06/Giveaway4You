@@ -6,8 +6,8 @@ module.exports = {
     cancelledTitle: "❌ Giveaway Cancelled",
 
     // Buttons
-    enterButtonLabel: "Enter Giveaway",
-    exitButtonLabel: "Exit Giveaway",
+    enterButtonLabel: "Enter/Exit",
+    exitButtonLabel: "Enter/Exit",
     enterButtonEmoji: "🎉",
     exitButtonEmoji: "❌",
 
