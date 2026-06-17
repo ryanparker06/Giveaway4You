@@ -52,7 +52,7 @@ for (const giveaway of scheduledGiveaways) {
    // Title
    container[0].components[0] = {
     type: 10, // Text Display
-    content: `# 🎁 ${giveaway.prize}`
+    content: `# 🎁 ${prize}`
   };
 
     // Separator below title
