@@ -165,7 +165,7 @@ async function buildGiveawayComponents(
       giveaway.bonusEntries
     ) &&
     giveaway.bonusEntries.length > 0
-      ? "\n\n**Bonus Entry Roles:**\n" +
+      ? "\n\nBonus Entry Roles:\n" +
         giveaway.bonusEntries
           .map(
             (b) =>

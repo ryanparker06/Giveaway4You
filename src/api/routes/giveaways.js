@@ -249,7 +249,7 @@ if (scheduledStart) {
       const bonusRolesText =
         Array.isArray(bonusEntries) &&
         bonusEntries.length > 0
-          ? "\n\n**Bonus Entry Roles:**\n" +
+          ? "\n\nBonus Entry Roles:\n" +
             bonusEntries
               .map(
                 (b) =>
