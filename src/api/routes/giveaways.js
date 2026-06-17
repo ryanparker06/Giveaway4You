@@ -193,9 +193,9 @@ if (scheduledStart) {
           description || "",
 
         bonusEntries:
-          Number(
-            bonusEntries || 0
-          ),
+        Array.isArray(bonusEntries)
+        ? bonusEntries
+        : [],
 
         requiredRoles:
           requiredRoles || [],
@@ -331,7 +331,15 @@ if (scheduledStart) {
           ended: false,
 
           description:
-            description || "",
+          description || "",
+          
+          bonusEntries:
+          Array.isArray(bonusEntries)
+          ? bonusEntries
+          : [],
+          
+          requiredRoles:
+          requiredRoles || [],
         });
 
       console.log(
