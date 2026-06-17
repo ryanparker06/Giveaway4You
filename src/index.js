@@ -206,6 +206,9 @@ async function buildGiveawayComponents(
 
   return container;
 }
+
+client.on("interactionCreate", async (interaction) => {
+  try {
     // ==========================================
     // BUTTON INTERACTIONS
     // ==========================================
