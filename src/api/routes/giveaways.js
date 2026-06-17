@@ -226,13 +226,12 @@ if (scheduledStart) {
           null,
           guild.id
         );
+// Title
 
-      // Title
-      container[0].components[0] = {
-        type: 10,
-        content:
-          "# 🎉 Giveaway Started",
-      };
+container[0].components[0] = {
+  type: 10,
+  content: `# 🎁 ${prize}`,
+};
 
       // Separator
       container[0].components.splice(
@@ -265,7 +264,6 @@ if (scheduledStart) {
         {
           type: 10,
           content:
-            `Prize: ${prize}\n` +
             `Participants: 0\n` +
             `Winners: ${
               winnerCount || 1

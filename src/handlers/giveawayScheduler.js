@@ -49,12 +49,11 @@ for (const giveaway of scheduledGiveaways) {
         giveaway.guildId
       );
 
-    // Title
-    container[0].components[0] = {
-      type: 10, // Text Display
-      content:
-        "# 🎉 Giveaway Started"
-    };
+   // Title
+   container[0].components[0] = {
+    type: 10, // Text Display
+    content: `# 🎁 ${prize}`
+  };
 
     // Separator below title
     container[0].components.splice(
@@ -89,7 +88,6 @@ for (const giveaway of scheduledGiveaways) {
       {
         type: 10, // Text Display
         content:
-          `Prize: ${giveaway.prize}\n` +
           `Participants: 0\n` +
           `Winners: ${giveaway.winnerCount}\n` +
           `Ends: <t:${endTimestamp}:R>\n` +
