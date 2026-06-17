@@ -230,7 +230,7 @@ if (scheduledStart) {
 
 container[0].components[0] = {
   type: 10,
-  content: `# 🎁 ${giveaway.prize}`,
+  content: `# 🎁 ${prize}`,
 };
 
       // Separator
