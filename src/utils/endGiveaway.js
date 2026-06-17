@@ -265,6 +265,8 @@ module.exports = async function endGiveaway(
       components: container
     });
 
+    console.log("🚨 REACHED WINNER ANNOUNCEMENT SECTION");
+
     /**
      * GIVE WINNER ROLE TO ALL WINNERS
      */
