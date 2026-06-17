@@ -433,9 +433,9 @@ module.exports = async function endGiveaway(
         {
           type: 10,
           content:
-            `> **Winner(s):** ${winnerMentions}\n\n` +
-            `> **Prize:** ${giveaway.prize}\n` +
-            `> **Hosted By:** <@${giveaway.hostedBy}>`
+            `> Winner(s): ${winnerMentions}\n\n` +
+            `> Prize: ${giveaway.prize}\n` +
+            `> Hosted By: <@${giveaway.hostedBy}>`
         }
       );
 
