@@ -231,6 +231,7 @@ module.exports = async function endGiveaway(
   container[0].components.splice(2, 0, {
     type: 10,
     content:
+
       `Participants: ${participantCount}\n` +
       `Winner(s): ${winnersText}\n` +
       `Ended: <t:${endTimestamp}:R>\n` +
@@ -383,99 +384,76 @@ module.exports = async function endGiveaway(
       }
     }
 
-      /**
-   * SEND WINNER ANNOUNCEMENT
-   */
-  console.log("========== GIVEAWAY DEBUG ==========");
-  console.log("cancelled:", cancelled);
-  console.log("winners:", winners);
-  console.log("winner count:", winners.length);
-  console.log(
-    "announcementSent:",
-    giveaway.announcementSent
-  );
-  console.log("===================================");
+    /**
+     * SEND WINNER ANNOUNCEMENT
+     */
+    if (
+      !cancelled &&
+      winners.length > 0 &&
+      !giveaway.announcementSent
+    ) {
+      const winnerMentions = winners
+        .map((id) => `<@${id}>`)
+        .join(", ");
 
-  if (
-    !cancelled &&
-    winners.length > 0 &&
-    !giveaway.announcementSent
-  ) {
-    const winnerMentions = winners
-      .map((id) => `<@${id}>`)
-      .join(", ");
+      const winnerTitle =
+        winners.length > 1
+          ? "# 🎉 Giveaway Winners!"
+          : "# 🎉 Giveaway Winner!";
 
-    const winnerTitle =
-      winners.length > 1
-        ? "# 🎉 Giveaway Winners!"
-        : "# 🎉 Giveaway Winner!";
+      // Build winner container
+      const winnerContainer =
+        await buildContainer(
+          "",
+          null,
+          giveaway.guildId
+        );
 
-    // Build winner container
-    const winnerContainer =
-      await buildContainer(
-        "",
-        null,
-        giveaway.guildId
+      // Title
+      winnerContainer[0].components[0] = {
+        type: 10,
+        content: winnerTitle
+      };
+
+      // Separator
+      winnerContainer[0].components.splice(
+        1,
+        0,
+        {
+          type: 14,
+          divider: true,
+          spacing: 2
+        }
       );
 
-    // Title
-    winnerContainer[0].components[0] = {
-      type: 10,
-      content: winnerTitle
-    };
+      // Winner information
+      winnerContainer[0].components.splice(
+        2,
+        0,
+        {
+          type: 10,
+          content:
+            `> Winner(s): ${winnerMentions}\n\n` +
+            `> Prize: ${giveaway.prize}\n` +
+            `> Hosted By: <@${giveaway.hostedBy}>`
+        }
+      );
 
-    // Separator
-    winnerContainer[0].components.splice(
-      1,
-      0,
-      {
-        type: 14,
-        divider: true,
-        spacing: 2
-      }
+      // Send winner announcement
+      await channel.send({
+        flags: MessageFlags.IsComponentsV2,
+        components: winnerContainer
+      });
+
+      giveaway.announcementSent = true;
+      await giveaway.save();
+    }
+  } catch (error) {
+    console.error(
+      "Error ending giveaway:",
+      error
     );
 
-    // Winner information
-    winnerContainer[0].components.splice(
-      2,
-      0,
-      {
-        type: 10,
-        content:
-          `> Winner(s): ${winnerMentions}\n\n` +
-          `> Prize: ${giveaway.prize}\n` +
-          `> Hosted By: <@${giveaway.hostedBy}>`
-      }
-    );
-
-    console.log(
-      "📢 Sending winner announcement..."
-    );
-
-    // Send winner announcement
-    await channel.send({
-      flags: MessageFlags.IsComponentsV2,
-      components: winnerContainer
-    });
-
-    console.log(
-      "✅ Winner announcement sent."
-    );
-
-    giveaway.announcementSent = true;
-    await giveaway.save();
-  } else {
-    console.log(
-      "❌ Winner announcement skipped."
-    );
+    throw error;
   }
-
-} catch (error) {
-  console.error(
-    "Error ending giveaway:",
-    error
-  );
-
-  throw error;
-}
 };
