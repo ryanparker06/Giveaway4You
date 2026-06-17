@@ -264,12 +264,12 @@ container[0].components[0] = {
         {
           type: 10,
           content:
-            `Participants: 0\n` +
+            `Hosted By: <@${userId}>\n` +
             `Winners: ${
               winnerCount || 1
-            }\n` +
+            }\n\n` +
+            `Participants: 0\n` +
             `Ends: <t:${endTimestamp}:R>\n` +
-            `Hosted By: <@${userId}>` +
             bonusRolesText,
         }
       );

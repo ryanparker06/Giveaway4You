@@ -231,11 +231,10 @@ module.exports = async function endGiveaway(
   container[0].components.splice(2, 0, {
     type: 10,
     content:
-
+      `Hosted By: <@${giveaway.hostedBy}>\n` +
+      `Winner(s): ${winnersText}\n\n` +
       `Participants: ${participantCount}\n` +
-      `Winner(s): ${winnersText}\n` +
       `Ended: <t:${endTimestamp}:R>\n` +
-      `Hosted By: <@${giveaway.hostedBy}>` +
       bonusRolesText
   });
 
