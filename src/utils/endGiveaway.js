@@ -383,76 +383,99 @@ module.exports = async function endGiveaway(
       }
     }
 
-    /**
-     * SEND WINNER ANNOUNCEMENT
-     */
-    if (
-      !cancelled &&
-      winners.length > 0 &&
-      !giveaway.announcementSent
-    ) {
-      const winnerMentions = winners
-        .map((id) => `<@${id}>`)
-        .join(", ");
+      /**
+   * SEND WINNER ANNOUNCEMENT
+   */
+  console.log("========== GIVEAWAY DEBUG ==========");
+  console.log("cancelled:", cancelled);
+  console.log("winners:", winners);
+  console.log("winner count:", winners.length);
+  console.log(
+    "announcementSent:",
+    giveaway.announcementSent
+  );
+  console.log("===================================");
 
-      const winnerTitle =
-        winners.length > 1
-          ? "# 🎉 Giveaway Winners!"
-          : "# 🎉 Giveaway Winner!";
+  if (
+    !cancelled &&
+    winners.length > 0 &&
+    !giveaway.announcementSent
+  ) {
+    const winnerMentions = winners
+      .map((id) => `<@${id}>`)
+      .join(", ");
 
-      // Build winner container
-      const winnerContainer =
-        await buildContainer(
-          "",
-          null,
-          giveaway.guildId
-        );
+    const winnerTitle =
+      winners.length > 1
+        ? "# 🎉 Giveaway Winners!"
+        : "# 🎉 Giveaway Winner!";
 
-      // Title
-      winnerContainer[0].components[0] = {
-        type: 10,
-        content: winnerTitle
-      };
-
-      // Separator
-      winnerContainer[0].components.splice(
-        1,
-        0,
-        {
-          type: 14,
-          divider: true,
-          spacing: 2
-        }
+    // Build winner container
+    const winnerContainer =
+      await buildContainer(
+        "",
+        null,
+        giveaway.guildId
       );
 
-      // Winner information
-      winnerContainer[0].components.splice(
-        2,
-        0,
-        {
-          type: 10,
-          content:
-            `> Winner(s): ${winnerMentions}\n\n` +
-            `> Prize: ${giveaway.prize}\n` +
-            `> Hosted By: <@${giveaway.hostedBy}>`
-        }
-      );
+    // Title
+    winnerContainer[0].components[0] = {
+      type: 10,
+      content: winnerTitle
+    };
 
-      // Send winner announcement
-      await channel.send({
-        flags: MessageFlags.IsComponentsV2,
-        components: winnerContainer
-      });
-
-      giveaway.announcementSent = true;
-      await giveaway.save();
-    }
-  } catch (error) {
-    console.error(
-      "Error ending giveaway:",
-      error
+    // Separator
+    winnerContainer[0].components.splice(
+      1,
+      0,
+      {
+        type: 14,
+        divider: true,
+        spacing: 2
+      }
     );
 
-    throw error;
+    // Winner information
+    winnerContainer[0].components.splice(
+      2,
+      0,
+      {
+        type: 10,
+        content:
+          `> Winner(s): ${winnerMentions}\n\n` +
+          `> Prize: ${giveaway.prize}\n` +
+          `> Hosted By: <@${giveaway.hostedBy}>`
+      }
+    );
+
+    console.log(
+      "📢 Sending winner announcement..."
+    );
+
+    // Send winner announcement
+    await channel.send({
+      flags: MessageFlags.IsComponentsV2,
+      components: winnerContainer
+    });
+
+    console.log(
+      "✅ Winner announcement sent."
+    );
+
+    giveaway.announcementSent = true;
+    await giveaway.save();
+  } else {
+    console.log(
+      "❌ Winner announcement skipped."
+    );
   }
+
+} catch (error) {
+  console.error(
+    "Error ending giveaway:",
+    error
+  );
+
+  throw error;
+}
 };
