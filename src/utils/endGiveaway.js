@@ -453,9 +453,11 @@ module.exports = async function endGiveaway(
     );
 
     // Send winner announcement
+   
     await channel.send({
-      flags: MessageFlags.IsComponentsV2,
-      components: winnerContainer
+      content:
+      `🎉 Congratulations ${winnerMentions}!\n\n` +
+      `You won **${giveaway.prize}**`
     });
 
     console.log(
