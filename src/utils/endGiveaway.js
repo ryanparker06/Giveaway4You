@@ -222,7 +222,7 @@ module.exports = async function endGiveaway(
         giveaway.bonusEntries
           .map(
             (b) =>
-              `<:bulletpoint:1516939993644404746> <@&${b.roleId}> (+${b.entries})`
+              `<:bulletpoint:1516941247032328234> <@&${b.roleId}> (+${b.entries})`
           )
           .join("\n")
       : "";
@@ -231,10 +231,10 @@ module.exports = async function endGiveaway(
   container[0].components.splice(2, 0, {
     type: 10,
     content:
-      `<:bulletpoint:1516939993644404746> Hosted By: <@${giveaway.hostedBy}>\n` +
-      `<:bulletpoint:1516939993644404746> Winner(s): ${winnersText}\n\n` +
-      `<:bulletpoint:1516939993644404746> Participants: ${participantCount}\n` +
-      `<:bulletpoint:1516939993644404746> Ended: <t:${endTimestamp}:R>` +
+      `<:bulletpoint:1516941247032328234> Hosted By: <@${giveaway.hostedBy}>\n` +
+      `<:bulletpoint:1516941247032328234> Winner(s): ${winnersText}\n\n` +
+      `<:bulletpoint:1516941247032328234> Participants: ${participantCount}\n` +
+      `<:bulletpoint:1516941247032328234> Ended: <t:${endTimestamp}:R>` +
       bonusRolesText
   });
 
