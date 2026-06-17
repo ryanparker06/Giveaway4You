@@ -249,7 +249,7 @@ if (scheduledStart) {
       const bonusRolesText =
         Array.isArray(bonusEntries) &&
         bonusEntries.length > 0
-          ? "\n\n**Bonus Entry Roles:**\n" +
+          ? "\n\n**🎁 Bonus Entry Roles:**\n" +
             bonusEntries
               .map(
                 (b) =>
@@ -265,13 +265,13 @@ if (scheduledStart) {
         {
           type: 10,
           content:
-            `**Prize:** ${prize}\n` +
-            `**Participants:** 0\n` +
-            `**Winners:** ${
+            `🎉 **Prize:** ${prize}\n` +
+            `👤 **Participants:** 0\n` +
+            `🏆 **Winners:** ${
               winnerCount || 1
             }\n` +
-            `**Ends:** <t:${endTimestamp}:R>\n` +
-            `**Hosted By:** <@${userId}>` +
+            `🏁 **Ends:** <t:${endTimestamp}:R>\n` +
+            `👑 **Hosted By:** <@${userId}>` +
             bonusRolesText,
         }
       );
