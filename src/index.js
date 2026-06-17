@@ -149,7 +149,7 @@ async function buildGiveawayComponents(
   // Replace the first text display with title only
   container[0].components[0] = {
     type: 10, // Text Display
-    content: `# 🎁 ${giveaway.prize}`
+    content: `# ${giveaway.prize}`
   };
 
   // Insert separator directly below the title
