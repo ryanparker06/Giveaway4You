@@ -389,7 +389,6 @@ module.exports = async function endGiveaway(
      */
     if (
       !cancelled &&
-      winners.length > 0 &&
       !giveaway.announcementSent
     ) {
       const winnerMentions = winners
