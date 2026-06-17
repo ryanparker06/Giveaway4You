@@ -234,7 +234,6 @@ module.exports = async function endGiveaway(
 
       `Participants: ${participantCount}\n` +
       `Winner(s): ${winnersText}\n` +
-      'Prize: ${prize}\n' +
       `Ended: <t:${endTimestamp}:R>\n` +
       `Hosted By: <@${giveaway.hostedBy}>` +
       bonusRolesText
