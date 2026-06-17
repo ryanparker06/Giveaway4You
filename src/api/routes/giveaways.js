@@ -281,7 +281,7 @@ if (scheduledStart) {
             custom_id:
               "giveaway_enter",
             label:
-              "🎉 Enter Giveaway",
+              "🎉 Enter/Exit",
           },
         }
       );

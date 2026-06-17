@@ -135,8 +135,6 @@ async function buildGiveawayComponents(
     ? giveaway.entries
     : [];
     
-    const isEntered = false;
-    
     const endTimestamp = Math.floor(
     new Date(giveaway.endsAt).getTime() / 1000
   );
@@ -199,8 +197,7 @@ client.on("interactionCreate", async (interaction) => {
     // ==========================================
     if (interaction.isButton()) {
       if (
-        interaction.customId !== "giveaway_enter" &&
-        interaction.customId !== "giveaway_exit"
+        interaction.customId !== "giveaway_enter"
       ) {
         return;
       }
@@ -262,13 +259,13 @@ client.on("interactionCreate", async (interaction) => {
         await giveaway.save();
 
         await interaction.message.edit({
-          flags:
-            MessageFlags.IsComponentsV2,
-          components:
-            await buildGiveawayComponents(
-              giveaway
-            )
-        });
+      flags:
+        MessageFlags.IsComponentsV2,
+      components:
+        await buildGiveawayComponents(
+          giveaway
+        )
+    });
 
         await interaction.followUp({
           flags:
