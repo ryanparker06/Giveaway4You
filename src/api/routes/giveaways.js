@@ -245,6 +245,19 @@ if (scheduledStart) {
         }
       );
 
+      // Bonus entry roles text
+      const bonusRolesText =
+        Array.isArray(bonusEntries) &&
+        bonusEntries.length > 0
+          ? "\n\n**Bonus Entry Roles:**\n" +
+            bonusEntries
+              .map(
+                (b) =>
+                  `<@&${b.roleId}> (+${b.entries})`
+              )
+              .join("\n")
+          : "";
+
       // Giveaway information
       container[0].components.splice(
         2,
@@ -258,7 +271,8 @@ if (scheduledStart) {
               winnerCount || 1
             }\n` +
             `**Ends:** <t:${endTimestamp}:R>\n` +
-            `**Hosted By:** <@${userId}>`,
+            `**Hosted By:** <@${userId}>` +
+            bonusRolesText,
         }
       );
 

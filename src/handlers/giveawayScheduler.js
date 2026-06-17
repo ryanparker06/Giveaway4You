@@ -16,122 +16,138 @@ module.exports = function startGiveawayScheduler(client) {
     try {
       const now = new Date();
 
-      // ==================================================
-      // START SCHEDULED GIVEAWAYS
-      // ==================================================
-      const scheduledGiveaways =
-        await Giveaway.find({
-          scheduled: true,
-          started: false,
-          scheduledStart: { $lte: now }
-        });
+    // ==================================================
+// START SCHEDULED GIVEAWAYS
+// ==================================================
+const scheduledGiveaways =
+  await Giveaway.find({
+    scheduled: true,
+    started: false,
+    scheduledStart: { $lte: now }
+  });
 
-      for (const giveaway of scheduledGiveaways) {
-        try {
-          const channel = await client.channels
-            .fetch(giveaway.channelId)
-            .catch(() => null);
+for (const giveaway of scheduledGiveaways) {
+  try {
+    const channel = await client.channels
+      .fetch(giveaway.channelId)
+      .catch(() => null);
 
-          if (!channel) {
-            continue;
-          }
+    if (!channel) {
+      continue;
+    }
 
-          const endTimestamp = Math.floor(
-            new Date(giveaway.endsAt).getTime() /
-              1000
-          );
+    const endTimestamp = Math.floor(
+      new Date(giveaway.endsAt).getTime() /
+        1000
+    );
 
-          // Build a blank container
-          const container =
-            await buildContainer(
-              "",
-              null,
-              giveaway.guildId
-            );
+    // Build a blank container
+    const container =
+      await buildContainer(
+        "",
+        null,
+        giveaway.guildId
+      );
 
-          // Title
-          container[0].components[0] = {
-            type: 10, // Text Display
+    // Title
+    container[0].components[0] = {
+      type: 10, // Text Display
+      content:
+        "# 🎉 Giveaway Started"
+    };
+
+    // Separator below title
+    container[0].components.splice(
+      1,
+      0,
+      {
+        type: 14, // Separator
+        divider: true,
+        spacing: 2 // Large
+      }
+    );
+
+    // Bonus entry roles text
+    const bonusRolesText =
+      Array.isArray(
+        giveaway.bonusEntries
+      ) &&
+      giveaway.bonusEntries.length > 0
+        ? "\n\n**Bonus Entry Roles:**\n" +
+          giveaway.bonusEntries
+            .map(
+              (b) =>
+                `<@&${b.roleId}> (+${b.entries})`
+            )
+            .join("\n")
+        : "";
+
+    // Giveaway information
+    container[0].components.splice(
+      2,
+      0,
+      {
+        type: 10, // Text Display
+        content:
+          `**Prize:** ${giveaway.prize}\n` +
+          `**Participants:** 0\n` +
+          `**Winners:** ${giveaway.winnerCount}\n` +
+          `**Ends:** <t:${endTimestamp}:R>\n` +
+          `**Hosted By:** <@${giveaway.hostedBy}>` +
+          bonusRolesText
+      }
+    );
+
+    // Section with Enter Giveaway button
+    container[0].components.splice(
+      3,
+      0,
+      {
+        type: 9, // Section
+        components: [
+          {
+            type: 10,
             content:
-              "# 🎉 Giveaway Started"
-          };
-
-          // Separator below title
-          container[0].components.splice(
-            1,
-            0,
-            {
-              type: 14, // Separator
-              divider: true,
-              spacing: 2 // Large
-            }
-          );
-
-          // Giveaway information
-          container[0].components.splice(
-            2,
-            0,
-            {
-              type: 10, // Text Display
-              content:
-                `**Prize:** ${giveaway.prize}\n` +
-                `**Participants:** 0\n` +
-                `**Winners:** ${giveaway.winnerCount}\n` +
-                `**Ends:** <t:${endTimestamp}:R>\n` +
-                `**Hosted By:** <@${giveaway.hostedBy}>`
-            }
-          );
-
-          // Section with Enter Giveaway button
-          container[0].components.splice(
-            3,
-            0,
-            {
-              type: 9, // Section
-              components: [
-                {
-                  type: 10,
-                  content:
-                    "Click the button to enter/exit the giveaway!"
-                }
-              ],
-              accessory: {
-                type: 2,
-                style: 1,
-                custom_id:
-                  "giveaway_enter",
-                label:
-                  "🎉 Enter/Exit"
-              }
-            }
-          );
-
-          // Send the giveaway message
-          const message =
-            await channel.send({
-              flags: 32768, // MessageFlags.IsComponentsV2
-              components:
-                container
-            });
-
-          // Update database
-          giveaway.messageId =
-            String(message.id);
-          giveaway.scheduled = false;
-          giveaway.started = true;
-
-          await giveaway.save();
-
-          console.log(
-            `Started scheduled giveaway ${giveaway._id}`
-          );
-        } catch (error) {
-          console.error(
-            `Failed to start scheduled giveaway ${giveaway._id}:`,
-            error
-          );
+              "Click the button to enter/exit the giveaway!"
+          }
+        ],
+        accessory: {
+          type: 2,
+          style: 1,
+          custom_id:
+            "giveaway_enter",
+          label:
+            "🎉 Enter/Exit"
         }
       }
+    );
+
+    // Send the giveaway message
+    const message =
+      await channel.send({
+        flags: 32768, // MessageFlags.IsComponentsV2
+        components:
+          container
+      });
+
+    // Update database
+    giveaway.messageId =
+      String(message.id);
+    giveaway.scheduled = false;
+    giveaway.started = true;
+
+    await giveaway.save();
+
+    console.log(
+      `Started scheduled giveaway ${giveaway._id}`
+    );
+  } catch (error) {
+    console.error(
+      `Failed to start scheduled giveaway ${giveaway._id}:`,
+      error
+    );
+  }
+}
 
       // ==================================================
       // END GIVEAWAYS

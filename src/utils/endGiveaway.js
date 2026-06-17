@@ -190,57 +190,73 @@ module.exports = async function endGiveaway(
       giveaway.endsAt.getTime() / 1000
     );
 
-    /**
-     * BUILD UPDATED GIVEAWAY CONTAINER
-     */
-    const container = await buildContainer(
-      "",
-      null,
-      giveaway.guildId
-    );
+      /**
+   * BUILD UPDATED GIVEAWAY CONTAINER
+   */
+  const container = await buildContainer(
+    "",
+    null,
+    giveaway.guildId
+  );
 
-    // Title
-    container[0].components[0] = {
-      type: 10,
-      content: title
-    };
+  // Title
+  container[0].components[0] = {
+    type: 10,
+    content: title
+  };
 
-    // Separator
-    container[0].components.splice(1, 0, {
-      type: 14,
-      divider: true,
-      spacing: 2
-    });
+  // Separator
+  container[0].components.splice(1, 0, {
+    type: 14,
+    divider: true,
+    spacing: 2
+  });
 
-    // Giveaway information
-    container[0].components.splice(2, 0, {
-      type: 10,
-      content:
-        `**Prize:** ${giveaway.prize}\n` +
-        `**Participants:** ${participantCount}\n` +
-        `**Winner(s):** ${winnersText}\n` +
-        `**Ended:** <t:${endTimestamp}:R>\n` +
-        `**Hosted By:** <@${giveaway.hostedBy}>`
-    });
+  // Bonus entry roles text
+  const bonusRolesText =
+    Array.isArray(
+      giveaway.bonusEntries
+    ) &&
+    giveaway.bonusEntries.length > 0
+      ? "\n\n**Bonus Entry Roles:**\n" +
+        giveaway.bonusEntries
+          .map(
+            (b) =>
+              `<@&${b.roleId}> (+${b.entries})`
+          )
+          .join("\n")
+      : "";
 
-    // Disabled button section
-    container[0].components.splice(3, 0, {
-      type: 9,
-      components: [
-        {
-          type: 10,
-          content:
-            "Click the button to enter/exit the giveaway!"
-        }
-      ],
-      accessory: {
-        type: 2,
-        style: cancelled ? 4 : 2,
-        custom_id: "giveaway_closed",
-        label: buttonLabel,
-        disabled: true
+  // Giveaway information
+  container[0].components.splice(2, 0, {
+    type: 10,
+    content:
+      `**Prize:** ${giveaway.prize}\n` +
+      `**Participants:** ${participantCount}\n` +
+      `**Winner(s):** ${winnersText}\n` +
+      `**Ended:** <t:${endTimestamp}:R>\n` +
+      `**Hosted By:** <@${giveaway.hostedBy}>` +
+      bonusRolesText
+  });
+
+  // Disabled button section
+  container[0].components.splice(3, 0, {
+    type: 9,
+    components: [
+      {
+        type: 10,
+        content:
+          "Click the button to enter/exit the giveaway!"
       }
-    });
+    ],
+    accessory: {
+      type: 2,
+      style: cancelled ? 4 : 2,
+      custom_id: "giveaway_closed",
+      label: buttonLabel,
+      disabled: true
+    }
+  });
 
     /**
      * UPDATE ORIGINAL GIVEAWAY MESSAGE

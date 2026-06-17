@@ -134,8 +134,8 @@ async function buildGiveawayComponents(
   )
     ? giveaway.entries
     : [];
-    
-    const endTimestamp = Math.floor(
+
+  const endTimestamp = Math.floor(
     new Date(giveaway.endsAt).getTime() / 1000
   );
 
@@ -159,6 +159,21 @@ async function buildGiveawayComponents(
     spacing: 2 // Large
   });
 
+  // Bonus entry roles text
+  const bonusRolesText =
+    Array.isArray(
+      giveaway.bonusEntries
+    ) &&
+    giveaway.bonusEntries.length > 0
+      ? "\n\n**Bonus Entry Roles:**\n" +
+        giveaway.bonusEntries
+          .map(
+            (b) =>
+              `<@&${b.roleId}> (+${b.entries})`
+          )
+          .join("\n")
+      : "";
+
   // Insert giveaway information below the separator
   container[0].components.splice(2, 0, {
     type: 10, // Text Display
@@ -167,7 +182,8 @@ async function buildGiveawayComponents(
       `**Participants:** ${entries.length}\n` +
       `**Winners:** ${giveaway.winnerCount}\n` +
       `**Ends:** <t:${endTimestamp}:R>\n` +
-      `**Hosted By:** <@${giveaway.hostedBy}>`
+      `**Hosted By:** <@${giveaway.hostedBy}>` +
+      bonusRolesText
   });
 
   // Insert Section with text and button
@@ -190,8 +206,6 @@ async function buildGiveawayComponents(
 
   return container;
 }
-client.on("interactionCreate", async (interaction) => {
-  try {
     // ==========================================
     // BUTTON INTERACTIONS
     // ==========================================
