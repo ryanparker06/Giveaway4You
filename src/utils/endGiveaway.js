@@ -265,8 +265,6 @@ module.exports = async function endGiveaway(
       components: container
     });
 
-    console.log("🚨 REACHED WINNER ANNOUNCEMENT SECTION");
-
     /**
      * GIVE WINNER ROLE TO ALL WINNERS
      */
@@ -454,25 +452,10 @@ module.exports = async function endGiveaway(
       "📢 Sending winner announcement..."
     );
 
-    console.log(
-      "📢 Channel Name:",
-      channel.name
-    );
-
-    console.log(
-      "📢 Channel ID:",
-      channel.id
-    );
-
-    console.log(
-      "📢 Giveaway Channel ID:",
-      giveaway.channelId
-    );
-
+    // Send winner announcement
     await channel.send({
-      content:
-        `🎉 Congratulations ${winnerMentions}!\n\n` +
-        `You won **${giveaway.prize}**`
+      flags: MessageFlags.IsComponentsV2,
+      components: winnerContainer
     });
 
     console.log(
