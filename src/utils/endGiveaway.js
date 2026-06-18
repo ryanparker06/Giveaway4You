@@ -396,8 +396,8 @@ module.exports = async function endGiveaway(
 
       const winnerTitle =
         winners.length > 1
-          ? "# 🎉 Giveaway Winners!"
-          : "# 🎉 Giveaway Winner!";
+          ? "# Giveaway Winners!"
+          : "# Giveaway Winner!";
 
       // Build winner container
       const winnerContainer =
@@ -431,8 +431,8 @@ module.exports = async function endGiveaway(
         {
           type: 10,
           content:
-            `<:bulletpoint:1516941247032328234> Winner(s): ${winnerMentions}\n\n` +
-            `<:bulletpoint:1516941247032328234> Prize: ${giveaway.prize}\n` +
+            `<:bulletpoint:1516941247032328234> Winner(s): ${winnerMentions}\n` +
+            `<:bulletpoint:1516941247032328234> Prize: ${giveaway.prize}\n\n` +
             `<:bulletpoint:1516941247032328234> Hosted By: <@${giveaway.hostedBy}>`
         }
       );

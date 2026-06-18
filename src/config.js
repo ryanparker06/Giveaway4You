@@ -1,9 +1,9 @@
 module.exports = {
   giveaway: {
     // Titles
-    title: "🎉 Giveaway Started",
-    endedTitle: "🎉 Giveaway Ended",
-    cancelledTitle: "❌ Giveaway Cancelled",
+    title: "Giveaway Started",
+    endedTitle: "Giveaway Ended",
+    cancelledTitle: "Giveaway Cancelled",
 
     // Buttons
     enterButtonLabel: "Enter/Exit",
